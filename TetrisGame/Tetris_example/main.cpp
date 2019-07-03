@@ -8,19 +8,19 @@ using namespace std;
 #include <windows.h>
 #include <mmsystem.h>
 #pragma comment(lib,"winmm.lib")
-void PlaySong(char *fileName)
-{
-	char  cmd[100], errMsg[100];
-	int     errCode;
-	wsprintf(cmd, TEXT("open %s type mpegvideo alias MediaFile"), fileName);
-	errCode = mciSendString(cmd, NULL, 0, NULL);
-	if (errCode == 0)
-		mciSendString(TEXT("play MediaFile"), NULL, 0, NULL);
-	else {
-		mciGetErrorString(errCode, errMsg, sizeof(errMsg));
-		MessageBox(0, errMsg, NULL, 0);
-	}
-}
+//void PlaySong(char *fileName)
+//{
+//	char  cmd[100], errMsg[100];
+//	int     errCode;
+//	wsprintf(cmd, TEXT("open %s type mpegvideo alias MediaFile"), fileName);
+//	errCode = mciSendString(cmd, NULL, 0, NULL);
+//	if (errCode == 0)
+//		mciSendString(TEXT("play MediaFile"), NULL, 0, NULL);
+//	else {
+//		mciGetErrorString(errCode, errMsg, sizeof(errMsg));
+//		MessageBox(0, errMsg, NULL, 0);
+//	}
+//}
 
 
 int main()
@@ -51,7 +51,7 @@ int main()
 			bool key1 = false;
 			bool key2 = false;
 
-			if (kbhit())    // 키 입력이 있다면 
+			if (_kbhit())    // 키 입력이 있다면 
             {		
 				int key = Controller::GetKey();					
 				if (tetris1.IsRunning())
