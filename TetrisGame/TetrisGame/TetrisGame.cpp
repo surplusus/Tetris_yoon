@@ -11,6 +11,7 @@ HINSTANCE hInst;                                // 현재 인스턴스입니다.
 WCHAR szTitle[MAX_LOADSTRING];                  // 제목 표시줄 텍스트입니다.
 WCHAR szWindowClass[MAX_LOADSTRING];            // 기본 창 클래스 이름입니다.
 HDC g_hdc; HWND g_hwnd;
+VOID CALLBACK UpdateProc(HWND hWnd, UINT uMsg, UINT idEvent, DWORD dwTime);
 
 // 이 코드 모듈에 포함된 함수의 선언을 전달합니다:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -121,8 +122,17 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	static GameManager *GM;
     switch (message)
     {
+	case WM_CREATE:
+	{
+		GM = GameManager::GetInstance();
+		GM->Init(hWnd, g_hdc);
+		int GAMESPEED = 1000 - (GM->Level() *50);
+		SetTimer(hWnd, 1, GAMESPEED, (TIMERPROC)UpdateProc);
+		SetTimer(hWnd, 2, 100, NULL);
+	}	break;
     case WM_COMMAND:
         {
             int wmId = LOWORD(wParam);
@@ -140,14 +150,40 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             }
         }
         break;
-    case WM_PAINT:
-        {
-            PAINTSTRUCT ps;
-            HDC hdc = BeginPaint(hWnd, &ps);
-            // TODO: 여기에 hdc를 사용하는 그리기 코드를 추가합니다...
-            EndPaint(hWnd, &ps);
-        }
-        break;
+	case WM_TIMER:
+	{
+		InvalidateRect(hWnd, NULL, FALSE);
+	}	break;
+	case WM_PAINT: {
+		// for start setting of double buffering
+		PAINTSTRUCT ps;
+		static HDC hdc, MemDC;
+		static HBITMAP BackBit, oldBackBit;
+		static RECT bufferRT;
+		MemDC = BeginPaint(hWnd, &ps);
+		GetClientRect(hWnd, &bufferRT);
+		hdc = CreateCompatibleDC(MemDC);
+		BackBit = CreateCompatibleBitmap(MemDC, bufferRT.right, bufferRT.bottom);
+		oldBackBit = (HBITMAP)SelectObject(hdc, BackBit);
+		PatBlt(hdc, 0, 0, bufferRT.right, bufferRT.bottom, WHITENESS);
+		
+		// TODO: 여기에 그리기 코드를 추가합니다.
+		DE.Render();
+
+		// for end setting of double buffering
+		GetClientRect(hWnd, &bufferRT);
+		BitBlt(MemDC, 0, 0, bufferRT.right, bufferRT.bottom, hdc, 0, 0, SRCCOPY);
+		SelectObject(hdc, oldBackBit);
+		DeleteObject(BackBit);
+		DeleteDC(hdc);
+		EndPaint(hWnd, &ps);
+	}	break;
+	case WM_KEYDOWN:
+	{
+		if (wParam == VK_ESCAPE)
+			GM->Pause();
+		GM->KeyInput(wParam);
+	}	break;
     case WM_DESTROY:
 		GameManager::ReleaseInstance();
         PostQuitMessage(0);
@@ -176,4 +212,9 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         break;
     }
     return (INT_PTR)FALSE;
+}
+
+VOID CALLBACK UpdateProc(HWND hWnd, UINT uMsg, UINT idEvent, DWORD dwTime)
+{
+	
 }

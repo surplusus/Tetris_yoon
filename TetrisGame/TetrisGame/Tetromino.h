@@ -19,10 +19,13 @@ private:
 	void SetBody();		// make a pack of rectangle as tetromino body
 public:
 	Tetromino(TETROMINO_TYPE type, int x = 4, int y = 1);
-public:
+private:
 	bool Rotate();	// if able to rotate, return true
 	void Move();
 	void GoDown();
-	bool checkValidPos();
+	bool CheckValidPos();
+public:
+	void KeyInput(WPARAM wParam);
+	void Update();
 };
 

@@ -73,7 +73,7 @@ void Tetromino::SetBody()
 
 }
 
-Tetromino::Tetromino(TETROMINO_TYPE type, int x =4, int y=1 ) : _type(type)
+Tetromino::Tetromino(TETROMINO_TYPE type, int x, int y) : _type(type)
 {
 	_center.x = x;	_center.y = y;
 	SetBody();
@@ -90,7 +90,7 @@ bool Tetromino::Rotate()
 		std::swap(body.x, body.y); 
 		body.x = -body.x;
 	}
-	if (checkValidPos())
+	if (CheckValidPos())
 	{
 		return true;
 	}
@@ -108,11 +108,11 @@ void Tetromino::Move()
 
 void Tetromino::GoDown()
 {
-	while (checkValidPos())
+	while (CheckValidPos())
 		Move();
 }
 
-bool Tetromino::checkValidPos()
+bool Tetromino::CheckValidPos()
 {
 	const int EMPTY = 0;
 	for (auto body : _tetromino)
@@ -121,8 +121,14 @@ bool Tetromino::checkValidPos()
 			return false;
 		if (body.y < 0)				// boundary of gameboard
 			return false;
-		if (GameManager::GetInstance()->gameboard->GetBoard(body) != EMPTY)
+		if (GameManager::GetInstance()->_gameboard->GetBoard(body) != EMPTY)
 			return false;
 	}
 	return true;
 }
+
+void Tetromino::KeyInput(WPARAM wParam)
+{
+
+}
+

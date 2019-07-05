@@ -1,14 +1,13 @@
 #pragma once
-#include "Background.h"
-#include "Tetromino.h"
+#include "Game.h"
 
 class GameManager
 {
 private:
 	static GameManager *Instance;
-	GameManager();
-	GameManager(GameManager & GM);
-	~GameManager();
+	GameManager() {}
+	GameManager(GameManager & GM) {}
+	~GameManager() {delete game;}
 public:
 	static GameManager* GetInstance() {
 		if (Instance == nullptr)
@@ -18,13 +17,15 @@ public:
 	static void ReleaseInstance() {
 		delete Instance;
 	}
+private:
+	DrawEngine *DE;
+	Game *game;
+	bool _pause = false;
 public:
-	bool pause;
-	Tetromino *curMino;
-	Tetromino *nextMino;
-	Background *gameboard;
-public:
-	bool IsGameOver();
+	void Init(DrawEngine &DEorigin);
+	void Pause();
 	void Update();
+	void KeyInput(const WPARAM & wParam);
+	int Level();
 };
 

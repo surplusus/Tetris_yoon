@@ -4,15 +4,14 @@
 class Time
 {
 private:
-	clock_t now;
-	clock_t basePeriod;
+	clock_t _now;
+	clock_t _basePeriod;
 public:
-	Time();
+	Time() : _now(0), _basePeriod(0) {}
 	~Time();
 public:
-	int Rand();	// 난수 만들기
-	int DeltaTime();  // 기준시간과 비교한 경과시간 표시
-	void SetBasePeriod();	// 기준시간 정하기
-	void DrawTime();  // 현재시간 표시
+	int DeltaTime() { return (_now - _basePeriod) / 1000; }  // delta time
+	void SetBasePeriod() { _basePeriod = _now; }	// set base period for delta time
+	int NowTime() { return _now / 1000; }  // now time from start
 };
 
