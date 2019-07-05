@@ -18,11 +18,9 @@ private:
 	int _maxwidth;
 	int _maxheight;
 	BLENDFUNCTION _blendfunction;
-	//GameManager *GM;
 public:
-	DrawEngine(HDC hdc, HWND hwnd, int width = 10, int height = 20) :
+	DrawEngine(const HWND & hwnd, const HDC & hdc,  int width = 10, int height = 20) :
 		_hdc(hdc), _hwnd(hwnd), _maxwidth(width), _maxheight(height) {
-		//GM = GameManager::GetInstance();
 		_blendfunction.AlphaFormat = AC_SRC_ALPHA;
 		_blendfunction.BlendFlags = 0;
 		_blendfunction.SourceConstantAlpha = 150;
@@ -35,5 +33,6 @@ public:
 	void DrawPause();
 	void DrawScore();
 	void DrawSpeed();
+	void DrawTime()
 };
 

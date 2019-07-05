@@ -5,7 +5,7 @@ class GameManager
 {
 private:
 	static GameManager *Instance;
-	GameManager() {}
+	GameManager() { game = new Game; }
 	GameManager(GameManager & GM) {}
 	~GameManager() {delete game;}
 public:
@@ -18,14 +18,15 @@ public:
 		delete Instance;
 	}
 private:
-	DrawEngine *DE;
 	Game *game;
 	bool _pause = false;
-public:
-	void Init(DrawEngine &DEorigin);
+public:		// communicate with TetrisGame
 	void Pause();
 	void Update();
-	void KeyInput(const WPARAM & wParam);
 	int Level();
+	void CountTime();
+public:		// communicate with game member
+	void KeyInput(const WPARAM & wParam);
+	
 };
 

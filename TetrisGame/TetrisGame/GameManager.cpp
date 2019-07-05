@@ -3,20 +3,13 @@
 
 GameManager* GameManager::Instance = nullptr;
 
-void GameManager::Init(DrawEngine &DEorigin)
-{
-
-	//DE = &DEorigin;
-	game = new Game;
-}
-
 void GameManager::Pause()
 {
 	_pause = game->Pause();
 	if (_pause)
 	{
 		game->Pause();
-		DE->DrawPause();
+		
 	}
 	else
 	{
@@ -31,6 +24,7 @@ void GameManager::Update()
 		return;
 
 	game->UpdateCurMino();
+	
 }
 
 void GameManager::KeyInput(const WPARAM & wParam)
@@ -42,5 +36,10 @@ void GameManager::KeyInput(const WPARAM & wParam)
 int GameManager::Level()
 {
 	return game->Level();
+}
+
+void GameManager::CountTime()
+{
+	game->UpdateTime();
 }
 

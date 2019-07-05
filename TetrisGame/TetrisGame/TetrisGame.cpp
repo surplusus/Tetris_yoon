@@ -10,8 +10,12 @@
 HINSTANCE hInst;                                // 현재 인스턴스입니다.
 WCHAR szTitle[MAX_LOADSTRING];                  // 제목 표시줄 텍스트입니다.
 WCHAR szWindowClass[MAX_LOADSTRING];            // 기본 창 클래스 이름입니다.
-HDC g_hdc; HWND g_hwnd;
+HDC g_hdc; HWND g_hwnd;							// for using global HWND & HDC
+static GameManager *GM;							// pointer for singleton pattern
+static DrawEngineManager *DM;					// pointer for singleton pattern
+int GAMESPEED;										// for changable speed based on level
 VOID CALLBACK UpdateProc(HWND hWnd, UINT uMsg, UINT idEvent, DWORD dwTime);
+VOID CALLBACK TimeProc(HWND hWnd, UINT uMsg, UINT idEvent, DWORD dwTime);
 
 // 이 코드 모듈에 포함된 함수의 선언을 전달합니다:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -120,18 +124,23 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //  WM_DESTROY  - 종료 메시지를 게시하고 반환합니다.
 //
 //
+
+
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	static GameManager *GM;
+	GAMESPEED = 1000 - (GM->Level() * 50);
+
     switch (message)
     {
 	case WM_CREATE:
 	{
 		GM = GameManager::GetInstance();
-		GM->Init(hWnd, g_hdc);
-		int GAMESPEED = 1000 - (GM->Level() *50);
+		DM = DrawEngineManager::GetInstance();
+		DM->Initiate(hWnd, g_hdc);
+		
 		SetTimer(hWnd, 1, GAMESPEED, (TIMERPROC)UpdateProc);
 		SetTimer(hWnd, 2, 100, NULL);
+		SetTimer(hWnd, 3, 1000, (TIMERPROC)TimeProc);
 	}	break;
     case WM_COMMAND:
         {
@@ -168,7 +177,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		PatBlt(hdc, 0, 0, bufferRT.right, bufferRT.bottom, WHITENESS);
 		
 		// TODO: 여기에 그리기 코드를 추가합니다.
-		DE.Render();
+		DM->Render();
 
 		// for end setting of double buffering
 		GetClientRect(hWnd, &bufferRT);
@@ -216,5 +225,10 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 VOID CALLBACK UpdateProc(HWND hWnd, UINT uMsg, UINT idEvent, DWORD dwTime)
 {
-	
+	GM->Update();
+}
+
+VOID CALLBACK TimeProc(HWND hWnd, UINT uMsg, UINT idEvent, DWORD dwTime)
+{
+	GM->CountTime();
 }

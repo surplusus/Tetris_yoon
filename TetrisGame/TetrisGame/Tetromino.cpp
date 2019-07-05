@@ -1,6 +1,13 @@
 #include "stdafx.h"
 #include "Tetromino.h"
 
+
+Tetromino::Tetromino(TETROMINO_TYPE type, int x, int y) : _type(type)
+{
+	_center.x = x;	_center.y = y;
+	SetBody();
+}
+
 COLORREF Tetromino::Color()
 {
 	switch (_type)
@@ -73,14 +80,8 @@ void Tetromino::SetBody()
 
 }
 
-Tetromino::Tetromino(TETROMINO_TYPE type, int x, int y) : _type(type)
-{
-	_center.x = x;	_center.y = y;
-	SetBody();
 
-}
-
-bool Tetromino::Rotate()
+bool Tetromino::Rotate(KEY_TYPE key)
 {	// not yet
 	_rotation = static_cast<ROTATE_TYPE>((_rotation + 1) % 4);
 	VECTORTETRO tmp = _tetromino;
@@ -121,14 +122,32 @@ bool Tetromino::CheckValidPos()
 			return false;
 		if (body.y < 0)				// boundary of gameboard
 			return false;
-		if (GameManager::GetInstance()->_gameboard->GetBoard(body) != EMPTY)
+		if ( != EMPTY)
 			return false;
 	}
 	return true;
 }
 
-void Tetromino::KeyInput(WPARAM wParam)
+void Tetromino::IsBlockOn(POINT block)
 {
+	for (int i = 0; i < 4; ++i)
+	{
+		if ()
+	}
+}
 
+void Tetromino::KeyInput(KEYVECTOR &key)
+{
+	if (key[0] == TRUE)				// if press SPACE
+		GoDown();
+	for (int k = 1; k < 5; ++k)		// if press	ARROW
+	{
+		if (key[k] == TRUE)
+			Rotate(static_cast<KEY_TYPE>(k));
+	}
+}
+
+void Tetromino::Update()
+{
 }
 

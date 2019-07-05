@@ -149,6 +149,7 @@
   <ItemGroup>
     <ClInclude Include="Background.h" />
     <ClInclude Include="DrawEngine.h" />
+    <ClInclude Include="DrawEngineManager.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameManager.h" />
     <ClInclude Include="Resource.h" />
@@ -161,6 +162,7 @@
   <ItemGroup>
     <ClCompile Include="Background.cpp" />
     <ClCompile Include="DrawEngine.cpp" />
+    <ClCompile Include="DrawEngineManager.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameManager.cpp" />
     <ClCompile Include="stdafx.cpp">
