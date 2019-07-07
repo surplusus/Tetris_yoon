@@ -1,12 +1,20 @@
 #pragma once
 #include "DrawEngine.h"
 
+// when Game class is NULL, use
+// 
+class NullGame : public Game {	
+public:
+	NullGame() {}
+	~NullGame() {}
+};
+
 class DrawEngineManager
 {
 private:
-	DrawEngineManager() {}
+	DrawEngineManager() { nullgame = new NullGame; }
 	DrawEngineManager(DrawEngineManager & de) {}
-	~DrawEngineManager() {}
+	~DrawEngineManager() { delete nullgame; }
 	static DrawEngineManager *Instance;
 public:
 	static DrawEngineManager* GetInstance() {
@@ -19,8 +27,10 @@ public:
 	}
 private:
 	DrawEngine *DE;
+	Game *nullgame;		// 
 public:
 	void Initiate(const HWND & hwnd, const HDC & hdc) { DE = new DrawEngine(hwnd, hdc); }
-	void Render() { DE->Render(); }
+	void Render(HDC & hdc);
+	Game* AccessGame();
 };
 

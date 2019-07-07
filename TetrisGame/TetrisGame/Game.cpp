@@ -1,15 +1,14 @@
 #include "stdafx.h"
 #include "Game.h"
-
+#include "Tetromino.h"
 
 Game::Game()
 {
 	KEYVECTOR key(5, FALSE);
-	_key = key;
-	_curMino = new Tetromino();
-	_nextMino = new Tetromino();
-	_time = new Time;
 	_gameboard = new Background();
+	_key = key;
+	_time = new Time;
+	
 }
 
 
@@ -21,7 +20,17 @@ Game::~Game()
 	delete _gameboard;
 }
 
-void Game::SetKey(const WPARAM & wParam)
+Tetromino * Game::GetTetromino(char CorN)
+{
+	if (CorN == 'C' || CorN == 'c')
+		return _curMino;
+	else if (CorN == 'N' || CorN == 'n')
+		return _nextMino;
+	else
+		return nullptr;
+}
+
+void Game::SetKey(WPARAM wParam)
 {
 	if (wParam == VK_SPACE)
 		_key[SPACE] = TRUE;
@@ -33,15 +42,28 @@ void Game::SetKey(const WPARAM & wParam)
 		_key[RIGHT] = TRUE;
 	if (wParam == VK_DOWN)
 		_key[DOWN] = TRUE;
-	_curMino->KeyInput(_key);
-	for (int k = 0; k < 5; ++k)
-		_key[k] = FALSE;
+
 }
 
 void Game::UpdateCurMino()
 {
-	_curMino->GetBoard(*_gameboard);
-	_curMino->Update();
+	if (_nextMino == nullptr)
+	{
+		_nextMino = new Tetromino;
+	}
+	
+	if (_curMino == nullptr)
+	{
+		_curMino = _nextMino;
+		_nextMino = new Tetromino;
+	}
+	_curMino->Update(_key,_gameboard);
+
+	for (int k = 0; k < 5; ++k)
+		_key[k] = FALSE;
+
+	if (_curMino->IsBlockOnEnd())
+		delete _curMino;
 }
 
 void Game::UpdateTime()
@@ -49,7 +71,22 @@ void Game::UpdateTime()
 	_time->NowTime();
 }
 
-bool Game::Pause()
+bool Game::GameOver()
+{
+	POINT deadend1 = { 11,3 };
+	POINT deadend2 = { 11,4 };
+	
+	if (_gameboard->GetBoard(deadend1) || _gameboard->GetBoard(deadend2))
+	{
+		///////////////// 게임이 끝났을때 처리
+		return true;
+	}
+		
+
+	return false;
+}
+
+bool Game::SetPause()
 {
 	// Can not pause if gameover
 	if (GameOver())
@@ -57,5 +94,10 @@ bool Game::Pause()
 
 	_pause ^= _pause;
 	return _pause;
+}
+
+void Game::UpdateBackBoard()
+{
+	////////tetrimino가 끝까지 가면 vectortet 순회하며 full 표시
 }
 

@@ -43,7 +43,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     {
         return FALSE;
     }
-	g_hdc = GetDC(g_hwnd);
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_TETRISGAME));
     MSG msg;
 
@@ -102,15 +101,13 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
    HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
       CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
-
    if (!hWnd)
    {
       return FALSE;
    }
-   g_hwnd = hWnd;
    ShowWindow(hWnd, nCmdShow);
+   g_hwnd = hWnd;
    UpdateWindow(hWnd);
-
    return TRUE;
 }
 
@@ -128,7 +125,6 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	GAMESPEED = 1000 - (GM->Level() * 50);
 
     switch (message)
     {
@@ -136,8 +132,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 		GM = GameManager::GetInstance();
 		DM = DrawEngineManager::GetInstance();
+		g_hdc = GetDC(hWnd);
 		DM->Initiate(hWnd, g_hdc);
-		
+		GAMESPEED = 1000 - (GM->Level() * 50);
 		SetTimer(hWnd, 1, GAMESPEED, (TIMERPROC)UpdateProc);
 		SetTimer(hWnd, 2, 100, NULL);
 		SetTimer(hWnd, 3, 1000, (TIMERPROC)TimeProc);
@@ -157,34 +154,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             default:
                 return DefWindowProc(hWnd, message, wParam, lParam);
             }
-        }
-        break;
+        }	break;
 	case WM_TIMER:
 	{
-		InvalidateRect(hWnd, NULL, FALSE);
+		InvalidateRect(hWnd, NULL, TRUE);
 	}	break;
 	case WM_PAINT: {
 		// for start setting of double buffering
 		PAINTSTRUCT ps;
-		static HDC hdc, MemDC;
-		static HBITMAP BackBit, oldBackBit;
-		static RECT bufferRT;
-		MemDC = BeginPaint(hWnd, &ps);
-		GetClientRect(hWnd, &bufferRT);
-		hdc = CreateCompatibleDC(MemDC);
-		BackBit = CreateCompatibleBitmap(MemDC, bufferRT.right, bufferRT.bottom);
-		oldBackBit = (HBITMAP)SelectObject(hdc, BackBit);
-		PatBlt(hdc, 0, 0, bufferRT.right, bufferRT.bottom, WHITENESS);
-		
-		// TODO: 여기에 그리기 코드를 추가합니다.
-		DM->Render();
+		g_hdc = BeginPaint(hWnd, &ps);
+		// TODO: here to add drawing code
+		DM->Render(g_hdc);
 
-		// for end setting of double buffering
-		GetClientRect(hWnd, &bufferRT);
-		BitBlt(MemDC, 0, 0, bufferRT.right, bufferRT.bottom, hdc, 0, 0, SRCCOPY);
-		SelectObject(hdc, oldBackBit);
-		DeleteObject(BackBit);
-		DeleteDC(hdc);
 		EndPaint(hWnd, &ps);
 	}	break;
 	case WM_KEYDOWN:
@@ -194,9 +175,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		GM->KeyInput(wParam);
 	}	break;
     case WM_DESTROY:
+	{
 		GameManager::ReleaseInstance();
-        PostQuitMessage(0);
-        break;
+		DrawEngineManager::ReleaseInstance();
+		KillTimer(hWnd, 1);
+		KillTimer(hWnd, 2);
+		KillTimer(hWnd, 3);
+		PostQuitMessage(0);
+	}	break;
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
     }
@@ -225,6 +211,7 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 VOID CALLBACK UpdateProc(HWND hWnd, UINT uMsg, UINT idEvent, DWORD dwTime)
 {
+	GM->SetGameSpeed(GAMESPEED);
 	GM->Update();
 }
 

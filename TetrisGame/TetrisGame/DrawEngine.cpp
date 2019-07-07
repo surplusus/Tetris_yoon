@@ -1,5 +1,25 @@
 #include "stdafx.h"
 #pragma comment (lib, "Msimg32.lib")
+#include <vector>
+
+void DrawEngine::Render(Game* G)
+{
+	// draw backboard
+	_pos = SetDrawPoint(_boardStartPos);
+	_rect = _rectGameBoard;
+	DrawGameBoard(_rect);
+	// draw nextblockboard
+	POINT p1 = SetDrawPoint(300, 200);
+	POINT p2 = SetDrawPoint(p1.x+basicPixel*4, p1.y + basicPixel * 4);
+	RECT nextBlockBoard = SetDrawRect(p1, p2);
+	DrawGameBoard(nextBlockBoard);
+	// draw nextmino
+	if (G->GetTetromino('N') != nullptr)
+		DrawTetromino(*(G->GetTetromino('N')));
+	// draw curmino
+	if (G->GetTetromino('C') != nullptr)
+		DrawTetromino(*(G->GetTetromino('C')));
+}
 
 void DrawEngine::DrawBlock(POINT pos, COLORREF color)
 {
@@ -33,11 +53,26 @@ void DrawEngine::DrawBlock(POINT pos, COLORREF color)
 
 }
 
-void DrawEngine::DrawGameBoard(RECT GameBoard)
+void DrawEngine::DrawTetromino(const Tetromino& tet)
+{
+	POINT cen = tet.GetCenter();	// make _tetromino[1] as _center
+	std::vector<POINT> body(tet.GetTetroBody());
+	
+	// create hbrush based on tetromino type;
+	COLORREF color = (COLORREF)(Color(tet.GetType()));
+	
+	for (auto t : body)
+	{
+		t.x += cen.x;	t.x = _boardStartPos.x + t.x * basicPixel;
+		t.y += cen.y;	t.y = _boardStartPos.y + t.y * basicPixel;
+		DrawBlock(t, color);
+	}
+}
+
+void DrawEngine::DrawGameBoard(RECT &GameBoard)
 {
 	// draw a gray area on the board
 	HBRUSH hBrush = CreateSolidBrush(RGB(100, 100, 100));
-	//HBRUSH oldBrush;
 	FillRect(_hdc, &GameBoard, hBrush);
 	//oldBrush = (HBRUSH)SelectObject(_hdc, hBrush);
 	DeleteObject(hBrush);
@@ -45,24 +80,89 @@ void DrawEngine::DrawGameBoard(RECT GameBoard)
 
 void DrawEngine::DrawPause()
 {
-	DrawScore();
-	DrawSpeed();
+	// center of gameboard
+	_x = _boardStartPos.x + (_boardWidth / 2);
+	_y = _boardStartPos.y + (_boardHeight / 2);	
+	DrawScore(_x, _y);
+	_y = _boardStartPos.y + (_boardHeight / 2) + 20;
+	DrawSpeed(_x, _y);
 }
 
-void DrawEngine::DrawScore()
+RECT &DrawEngine::SetDrawRect(POINT p1, POINT p2)
+{
+	_rect.left = p1.x;	// origin coornate
+	_rect.top = p1.y;		// origin coornate
+	_rect.right = p2.x;	// new pos
+	_rect.bottom = p2.y;	// new pos
+	return _rect;
+}
+
+void DrawEngine::DrawScore(int & x, int & y)
 {
 	TCHAR szBuffer[20];
-	int len = wsprintf(szBuffer, TEXT("Score: %6d"),);
+	DrawEngineManager* DE = DrawEngineManager::GetInstance();
+	int score = DE->AccessGame()->GetScore();
+	int text = wsprintf(szBuffer, TEXT("Score: %6d"),score);
 	SetBkMode(_hdc, OPAQUE);
-	TextOut(_hdc, x, y, szBuffer, len);
+	TextOut(_hdc, x, y, szBuffer, text);
 	SetBkMode(_hdc, TRANSPARENT);
 }
 
-void DrawEngine::DrawSpeed()
+void DrawEngine::DrawSpeed(int & x, int & y)
 {
 	TCHAR szBuffer[20];
-	int len = wsprintf(szBuffer, TEXT("Speed: %6d"), speed);
-	SetBkMode(hdc, OPAQUE);
-	TextOut(hdc, x, y, szBuffer, len);
-	SetBkMode(hdc, TRANSPARENT);
+	GameManager* GM = GameManager::GetInstance();
+	int text = wsprintf(szBuffer, TEXT("Speed: %6d"), GM->GetGamespeed());
+	SetBkMode(_hdc, OPAQUE);
+	TextOut(_hdc, x, y, szBuffer, text);
+	SetBkMode(_hdc, TRANSPARENT);
+}
+
+void DrawEngine::DrawTime(int & x, int & y)
+{
+	TCHAR szBuffer[20];
+	DrawEngineManager* DE = DrawEngineManager::GetInstance();
+	int time = DE->AccessGame()->GetTime();
+	int text = wsprintf(szBuffer, TEXT("Score: %6d"), time);
+	SetBkMode(_hdc, OPAQUE);
+	TextOut(_hdc, x, y, szBuffer, text);
+	SetBkMode(_hdc, TRANSPARENT);
+}
+
+const COLORREF DrawEngine::Color(const Tetromino::TETROMINO_TYPE type)
+{
+	switch (type)
+	{
+	case Tetromino::TETROMINO_I:
+		return static_cast<COLORREF>(RGB(77, 100, 255));
+	case Tetromino::TETROMINO_J:
+		return static_cast<COLORREF>(RGB(70, 232, 161));
+	case Tetromino::TETROMINO_L:
+		return static_cast<COLORREF>(RGB(255, 254, 90));
+	case Tetromino::TETROMINO_O:
+		return static_cast<COLORREF>(RGB(232, 147, 70));
+	case Tetromino::TETROMINO_S:
+		return static_cast<COLORREF>(RGB(255, 87, 219));
+	case Tetromino::TETROMINO_T:
+		return static_cast<COLORREF>(RGB(143, 232, 70));
+	case Tetromino::TETROMINO_Z:
+		return static_cast<COLORREF>(RGB(255, 249, 236));
+	}
+}
+
+POINT& DrawEngine::SetDrawPoint(POINT pos)
+{
+	_pos = pos;
+	_x = pos.x;
+	_y = pos.y;
+	return pos;
+}
+
+POINT& DrawEngine::SetDrawPoint(int x, int y)
+{
+	_x = x;
+	_y = y;
+	_pos.x = x;
+	_pos.y = y;
+	return _pos;
 }

@@ -2,31 +2,10 @@
 #include "Tetromino.h"
 
 
-Tetromino::Tetromino(TETROMINO_TYPE type, int x, int y) : _type(type)
+Tetromino::Tetromino(int x, int y,	TETROMINO_TYPE type) : _type(type)
 {
 	_center.x = x;	_center.y = y;
 	SetBody();
-}
-
-COLORREF Tetromino::Color()
-{
-	switch (_type)
-	{
-	case Tetromino::TETROMINO_I:
-		return static_cast<COLORREF>(RGB(77, 100, 255));
-	case Tetromino::TETROMINO_J:
-		return static_cast<COLORREF>(RGB(70, 232, 161));
-	case Tetromino::TETROMINO_L:
-		return static_cast<COLORREF>(RGB(255, 254, 90));
-	case Tetromino::TETROMINO_O:
-		return static_cast<COLORREF>(RGB(232, 147, 70));
-	case Tetromino::TETROMINO_S:
-		return static_cast<COLORREF>(RGB(255, 87, 219));
-	case Tetromino::TETROMINO_T:
-		return static_cast<COLORREF>(RGB(143, 232, 70));
-	case Tetromino::TETROMINO_Z:
-		return static_cast<COLORREF>(RGB(255, 249, 236));
-	}
 }
 
 void Tetromino::SetBody()
@@ -81,16 +60,17 @@ void Tetromino::SetBody()
 }
 
 
-bool Tetromino::Rotate(KEY_TYPE key)
-{	// not yet
+bool Tetromino::Rotate()
+{	
 	_rotation = static_cast<ROTATE_TYPE>((_rotation + 1) % 4);
 	VECTORTETRO tmp = _tetromino;
 
 	for (auto body : _tetromino)		// rotate each blocks in counter-clockwise
 	{
-		std::swap(body.x, body.y); 
+		std::swap(body.x, body.y);
 		body.x = -body.x;
 	}
+
 	if (CheckValidPos())
 	{
 		return true;
@@ -102,19 +82,42 @@ bool Tetromino::Rotate(KEY_TYPE key)
 	}
 }
 
-void Tetromino::Move()
+void Tetromino::MoveLeft()
 {
-	_center.y++;
+	_center.x--;
+	if (CheckValidPos())
+		return;
+	else
+		_center.x++;
 }
 
-void Tetromino::GoDown()
+void Tetromino::MoveDown()
+{
+		_center.y++;
+	if (CheckValidPos())
+		return;
+	else
+		_center.y--;
+}
+
+void Tetromino::MoveRight()
+{
+	_center.x++;
+	if (CheckValidPos())
+		return;
+	else
+		_center.x--;
+}
+
+void Tetromino::GoStrightDown()
 {
 	while (CheckValidPos())
-		Move();
+		MoveDown();
 }
 
 bool Tetromino::CheckValidPos()
 {
+	
 	const int EMPTY = 0;
 	for (auto body : _tetromino)
 	{	
@@ -122,32 +125,39 @@ bool Tetromino::CheckValidPos()
 			return false;
 		if (body.y < 0)				// boundary of gameboard
 			return false;
-		if ( != EMPTY)
+		if (_background->GetBoard(body) != EMPTY)
 			return false;
 	}
 	return true;
 }
 
-void Tetromino::IsBlockOn(POINT block)
+bool Tetromino::IsBlockOnEnd()
 {
-	for (int i = 0; i < 4; ++i)
+	if (_background->GetBoard(_center) != 0)
 	{
-		if ()
+		life = false;
+		return true;
 	}
+	return false;
 }
 
-void Tetromino::KeyInput(KEYVECTOR &key)
+void Tetromino::Update(KEYVECTOR &key, Background* BG)
 {
-	if (key[0] == TRUE)				// if press SPACE
-		GoDown();
-	for (int k = 1; k < 5; ++k)		// if press	ARROW
-	{
-		if (key[k] == TRUE)
-			Rotate(static_cast<KEY_TYPE>(k));
-	}
-}
+	// if press SPACE
+	if (key[SPACE] == TRUE)				
+		GoStrightDown();
 
-void Tetromino::Update()
-{
+	// if press	ARROW
+	if (key[UP] == TRUE)
+		Rotate();
+	if (key[LEFT] == TRUE)
+		MoveLeft();
+	if (key[RIGHT] == TRUE)
+		MoveRight();
+	if (key[DOWN] == TRUE)
+		MoveDown();
+
+	SetBackground(BG);
+	_center.y++;
 }
 

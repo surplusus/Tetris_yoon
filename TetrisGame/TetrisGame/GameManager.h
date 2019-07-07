@@ -1,11 +1,12 @@
 #pragma once
 #include "Game.h"
 
+class DrawEngineManager;
 class GameManager
 {
 private:
 	static GameManager *Instance;
-	GameManager() { game = new Game; }
+	GameManager() { game = new Game;}
 	GameManager(GameManager & GM) {}
 	~GameManager() {delete game;}
 public:
@@ -19,14 +20,18 @@ public:
 	}
 private:
 	Game *game;
-	bool _pause = false;
+	int gamespeed;
 public:		// communicate with TetrisGame
 	void Pause();
 	void Update();
 	int Level();
 	void CountTime();
+	Game *AccessGame(DrawEngineManager* DM) const { return game; }
+
+	void SetGameSpeed(const int &_gamespeed) { gamespeed = _gamespeed; }
+	const int GetGamespeed() const { return gamespeed; }
 public:		// communicate with game member
-	void KeyInput(const WPARAM & wParam);
+	void KeyInput(const WPARAM wParam);
 	
 };
 

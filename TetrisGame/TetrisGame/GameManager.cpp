@@ -5,29 +5,21 @@ GameManager* GameManager::Instance = nullptr;
 
 void GameManager::Pause()
 {
-	_pause = game->Pause();
-	if (_pause)
-	{
-		game->Pause();
-		
-	}
-	else
-	{
-
-	}
+	game->SetPause();
 }
 
 void GameManager::Update()
 {
 	// when pause, stop update
-	if (_pause)
+	if (game->GetPause())
 		return;
 
+	game->UpdateBackBoard();
 	game->UpdateCurMino();
 	
 }
 
-void GameManager::KeyInput(const WPARAM & wParam)
+void GameManager::KeyInput(const WPARAM wParam)
 {
 	game->SetKey(wParam);
 	game->UpdateCurMino();
@@ -35,7 +27,10 @@ void GameManager::KeyInput(const WPARAM & wParam)
 
 int GameManager::Level()
 {
-	return game->Level();
+	if (game == nullptr)
+		return 0;
+	else
+		return game->Level();
 }
 
 void GameManager::CountTime()

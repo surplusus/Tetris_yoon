@@ -8,7 +8,7 @@ class Game
 {
 private:
 	using KEYVECTOR = std::vector<bool>;
-	enum KEY_TYPE {SPACE, LEFT, UP,RIGHT,DOWN};
+	enum KEY_TYPE {SPACE=0, LEFT, UP,RIGHT,DOWN};
 public:
 	Game();
 	~Game();
@@ -22,13 +22,22 @@ private:
 	Time *_time;
 	int _level = 1;
 	KEYVECTOR _key;
+private:
+	//void CreateNextTetromino();
+
+public:		// Getter
+	Tetromino* GetTetromino(char CorN);
+	int GetScore() { return _score; }
+	int GetTime() { return _time->NowTime(); }
+	bool GetPause() { return _pause; }
 public:
-	void SetKey(const WPARAM & wParam);
+	void SetKey(WPARAM wParam);
 	int Level() { return _level; }
-	void CreateNextTetromino();
+	bool GameOver();
+	bool SetPause();
+public:		//update()
+	void UpdateBackBoard();
 	void UpdateCurMino();
 	void UpdateTime();
-	bool GameOver();
-	bool Pause();
 };
 
