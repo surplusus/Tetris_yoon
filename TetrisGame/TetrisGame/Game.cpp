@@ -4,8 +4,8 @@
 
 Game::Game()
 {
-	KEYVECTOR key(5, FALSE);
 	_gameboard = new Background();
+	KEYVECTOR key(5, false);
 	_key = key;
 	_time = new Time;
 	
@@ -30,6 +30,15 @@ Tetromino * Game::GetTetromino(char CorN)
 		return nullptr;
 }
 
+bool Game::IsAllSetUp()
+{
+	if (_curMino == nullptr || _nextMino == nullptr ||
+		_gameboard == nullptr || _time == nullptr)
+		return false;
+	else
+		return true;
+}
+
 void Game::SetKey(WPARAM wParam)
 {
 	if (wParam == VK_SPACE)
@@ -49,21 +58,28 @@ void Game::UpdateCurMino()
 {
 	if (_nextMino == nullptr)
 	{
-		_nextMino = new Tetromino;
+		_nextMino = new Tetromino(1,1);
 	}
 	
 	if (_curMino == nullptr)
 	{
+		POINT center = { 4,1 };
 		_curMino = _nextMino;
-		_nextMino = new Tetromino;
+		_curMino->SetCenter(center);
+		_curMino->SetBody(center);
+		_nextMino = new Tetromino(1,1);
 	}
 	_curMino->Update(_key,_gameboard);
 
 	for (int k = 0; k < 5; ++k)
-		_key[k] = FALSE;
+		_key[k] = false;
 
 	if (_curMino->IsBlockOnEnd())
+	{
+		for (auto t : _curMino->GetBody())
+			_gameboard->SetBoard(t, Background::FULL);
 		delete _curMino;
+	}
 }
 
 void Game::UpdateTime()

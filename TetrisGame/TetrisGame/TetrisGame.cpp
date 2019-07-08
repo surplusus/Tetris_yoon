@@ -134,7 +134,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		DM = DrawEngineManager::GetInstance();
 		g_hdc = GetDC(hWnd);
 		DM->Initiate(hWnd, g_hdc);
-		GAMESPEED = 1000 - (GM->Level() * 50);
+		GAMESPEED = 1500 - (GM->Level() * 50);
 		SetTimer(hWnd, 1, GAMESPEED, (TIMERPROC)UpdateProc);
 		SetTimer(hWnd, 2, 100, NULL);
 		SetTimer(hWnd, 3, 1000, (TIMERPROC)TimeProc);
@@ -157,22 +157,38 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }	break;
 	case WM_TIMER:
 	{
-		InvalidateRect(hWnd, NULL, TRUE);
+		InvalidateRect(hWnd, NULL, FALSE);
 	}	break;
 	case WM_PAINT: {
 		// for start setting of double buffering
 		PAINTSTRUCT ps;
-		g_hdc = BeginPaint(hWnd, &ps);
-		// TODO: here to add drawing code
-		DM->Render(g_hdc);
+		static HDC hdc, MemDC;
+		static HBITMAP BackBit, oldBackBit;
+		static RECT bufferRT;
+		MemDC = BeginPaint(hWnd, &ps);
+		GetClientRect(hWnd, &bufferRT);
+		hdc = CreateCompatibleDC(MemDC);
+		BackBit = CreateCompatibleBitmap(MemDC, bufferRT.right, bufferRT.bottom);
+		oldBackBit = (HBITMAP)SelectObject(hdc, BackBit);
+		PatBlt(hdc, 0, 0, bufferRT.right, bufferRT.bottom, WHITENESS);
 
+		// TODO: 여기에 그리기 코드를 추가합니다.
+		DM->Render(hdc);
+
+		// for end setting of double buffering
+		GetClientRect(hWnd, &bufferRT);
+		BitBlt(MemDC, 0, 0, bufferRT.right, bufferRT.bottom, hdc, 0, 0, SRCCOPY);
+		SelectObject(hdc, oldBackBit);
+		DeleteObject(BackBit);
+		DeleteDC(hdc);
 		EndPaint(hWnd, &ps);
-	}	break;
+	}    break;
 	case WM_KEYDOWN:
 	{
 		if (wParam == VK_ESCAPE)
 			GM->Pause();
-		GM->KeyInput(wParam);
+		if (GM->IsAllSetUp())
+			GM->KeyInput(wParam);
 	}	break;
     case WM_DESTROY:
 	{

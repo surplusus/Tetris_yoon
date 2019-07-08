@@ -5,10 +5,12 @@
 Tetromino::Tetromino(int x, int y,	TETROMINO_TYPE type) : _type(type)
 {
 	_center.x = x;	_center.y = y;
-	SetBody();
+	SetTetromino();
+	_body.resize(4);
+	SetBody(_center);
 }
 
-void Tetromino::SetBody()
+void Tetromino::SetTetromino()
 {
 	_tetromino.resize(4);
 	switch (_type)
@@ -63,21 +65,23 @@ void Tetromino::SetBody()
 bool Tetromino::Rotate()
 {	
 	_rotation = static_cast<ROTATE_TYPE>((_rotation + 1) % 4);
-	VECTORTETRO tmp = _tetromino;
+	VECTORTETRO tmp = _body;
 
-	for (auto body : _tetromino)		// rotate each blocks in counter-clockwise
+	for (auto &t : _tetromino)		// rotate each blocks in counter-clockwise
 	{
-		std::swap(body.x, body.y);
-		body.x = -body.x;
+		std::swap(t.x, t.y);
+		t.x = -t.x;
 	}
-
+	
+	SetBody(_center);
+	
 	if (CheckValidPos())
 	{
 		return true;
 	}
 	else
 	{
-		_tetromino = tmp;
+		_body = tmp;
 		return false;
 	}
 }
@@ -85,28 +89,31 @@ bool Tetromino::Rotate()
 void Tetromino::MoveLeft()
 {
 	_center.x--;
-	if (CheckValidPos())
-		return;
-	else
+
+	if (!CheckValidPos())
 		_center.x++;
+
+	SetBody(_center);
 }
 
 void Tetromino::MoveDown()
 {
-		_center.y++;
-	if (CheckValidPos())
-		return;
-	else
+	_center.y++;
+
+	if (!CheckValidPos())
 		_center.y--;
+
+	SetBody(_center);
 }
 
 void Tetromino::MoveRight()
 {
 	_center.x++;
-	if (CheckValidPos())
-		return;
-	else
+
+	if (!CheckValidPos())
 		_center.x--;
+
+	SetBody(_center);
 }
 
 void Tetromino::GoStrightDown()
@@ -117,9 +124,8 @@ void Tetromino::GoStrightDown()
 
 bool Tetromino::CheckValidPos()
 {
-	
 	const int EMPTY = 0;
-	for (auto body : _tetromino)
+	for (auto body : _body)
 	{	
 		if (body.x < 0 || body.x >8)	// boundary of gameboard
 			return false;
@@ -133,7 +139,7 @@ bool Tetromino::CheckValidPos()
 
 bool Tetromino::IsBlockOnEnd()
 {
-	if (_background->GetBoard(_center) != 0)
+	if (_background->GetBoard(_bottom) != Background::EMPTY || _bottom.y <= 0)
 	{
 		life = false;
 		return true;
@@ -141,23 +147,41 @@ bool Tetromino::IsBlockOnEnd()
 	return false;
 }
 
+void Tetromino::SetBody(POINT center)
+{
+	// set body based on center
+	for (int i = 0; i < 4; ++i)
+	{
+		_body[i].x = _tetromino[i].x + _center.x;
+		_body[i].y = _tetromino[i].y + _center.y;
+	}
+	// set bottom as the lowest position
+	POINT bottom = { 0,0 };
+	for (auto t : _body)
+		bottom = (bottom.y < t.y) ? t : bottom;
+	_bottom = bottom;
+}
+
 void Tetromino::Update(KEYVECTOR &key, Background* BG)
 {
+	SetBackground(BG);
+	_center.y++;
 	// if press SPACE
-	if (key[SPACE] == TRUE)				
+	if (key[SPACE] == true)				
 		GoStrightDown();
 
 	// if press	ARROW
-	if (key[UP] == TRUE)
+	if (key[UP] == true)
 		Rotate();
-	if (key[LEFT] == TRUE)
+	if (key[LEFT] == true)
 		MoveLeft();
-	if (key[RIGHT] == TRUE)
+	if (key[RIGHT] == true)
 		MoveRight();
-	if (key[DOWN] == TRUE)
+	if (key[DOWN] == true)
 		MoveDown();
 
+	
 	SetBackground(BG);
-	_center.y++;
+	
 }
 

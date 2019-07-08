@@ -31,6 +31,7 @@ public:		// Getter
 	int GetTime() { return _time->NowTime(); }
 	bool GetPause() { return _pause; }
 public:
+	bool IsAllSetUp();
 	void SetKey(WPARAM wParam);
 	int Level() { return _level; }
 	bool GameOver();

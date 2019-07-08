@@ -2,13 +2,14 @@
 
 class Background
 {
+public:
+	enum STATE { EMPTY = 0, FULL = 1 };
 private:
 	const int basicPixel = 25;
-	enum STATE{EMPTY = 0, FULL = 1};
 private:
-	STATE _gameboard[12][8] = { EMPTY, };
-	STATE _nextBlockBoard[4][4] = { EMPTY, };
-	bool _fullLine[12] = { EMPTY, };
+	STATE _gameboard[15][8] = { EMPTY, };
+	STATE _nextBlockBoard[3][3] = { EMPTY, };
+	bool _fullLine[15] = { EMPTY, };
 	int _cntLineDeleted = 0;	// count the number of the line deleted
 public:
 	Background() {}

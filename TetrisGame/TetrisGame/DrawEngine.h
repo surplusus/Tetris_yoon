@@ -11,7 +11,7 @@ class DrawEngine
 {
 private:
 	const int basicPixel = 25;
-	const RECT _rectGameBoard = { 50,50,50 + basicPixel * 8, 50 + basicPixel * 12 };
+	const RECT _rectGameBoard = { 50,50,50 + basicPixel * 8, 50 + basicPixel * 15 };
 	HDC _hdc;
 	HDC _memDC[3];	//internal temporary memory Handle Device Context
 	HWND _hwnd;
@@ -19,6 +19,7 @@ private:
 	int _x, _y;		// internal temporary coordinate variable
 	POINT _pos;		// internal temporary POINT variable
 	POINT _boardStartPos = { 50,50 };	// board start from here
+	POINT _nextboardStartPos = { 300,150 };	// nextboard start from here
 	int _boardWidth = 200;	// board width
 	int _boardHeight = 300;	// board heigth
 	BLENDFUNCTION _blendfunction;
@@ -33,16 +34,16 @@ public:
 public:
 	void Render(Game* G);	// reflect all the draw function 
 	void DrawBlock(POINT pos, COLORREF color);	// draw basic block which makes tetromino
-	void DrawTetromino(const Tetromino& tet);
-	void DrawGameBoard(RECT &GameBoard);	// draw interface of tetris which is used in gameplay
+	void DrawTetromino(const Tetromino& tet, char ch);
+	void DrawGameBoard(RECT& GameBoard);	// draw interface of tetris which is used in gameplay
 	void DrawPause();
 	void DrawScore(int &x, int &y);
 	void DrawSpeed(int &x, int &y);
 	void DrawTime(int &x, int &y);
 	const COLORREF Color(const Tetromino::TETROMINO_TYPE type);
-	void SetHDC(HDC & hdc) { _hdc = hdc; }
+	void SetHDC(HDC& hdc) { _hdc = hdc; }
 	POINT& SetDrawPoint(POINT pos);
 	POINT& SetDrawPoint(int x, int y);
-	RECT &SetDrawRect(POINT p1,POINT p2);
+	RECT& SetDrawRect(POINT p1,POINT p2);
 };
 

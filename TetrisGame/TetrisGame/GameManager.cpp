@@ -38,3 +38,13 @@ void GameManager::CountTime()
 	game->UpdateTime();
 }
 
+bool GameManager::IsAllSetUp()
+{
+	if (game ==nullptr)
+		return false;
+	if (!game->IsAllSetUp())
+		return false;
+
+	return true;
+}
+

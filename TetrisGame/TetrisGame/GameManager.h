@@ -27,7 +27,7 @@ public:		// communicate with TetrisGame
 	int Level();
 	void CountTime();
 	Game *AccessGame(DrawEngineManager* DM) const { return game; }
-
+	bool IsAllSetUp();
 	void SetGameSpeed(const int &_gamespeed) { gamespeed = _gamespeed; }
 	const int GetGamespeed() const { return gamespeed; }
 public:		// communicate with game member
