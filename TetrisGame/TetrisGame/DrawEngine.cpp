@@ -14,19 +14,25 @@ void DrawEngine::Render(Game* G)
 	RECT nextBlockBoard = SetDrawRect(p1, p2);
 	DrawGameBoard(nextBlockBoard);
 	
-	
 	// draw nextmino
-	Tetromino* tet = G->GetTetromino('N');
+	 Tetromino* tet = G->GetTetromino('N');
 	if (tet != nullptr)
 	{
 		DrawTetromino(*tet, 'N');
 	}
-	// draw curmino
+	
 	tet = G->GetTetromino('C');
 	if (tet != nullptr)
 	{
+		// draw curmino
 		DrawTetromino(*tet, 'C');
+		// draw predict Block
+		DrawTetromino(*tet, 'P');
 	}
+	// draw piled block
+
+	for (auto B : *(G->GetPileBoard()))
+		DrawBlock(B, RGB(55, 55, 55));
 }
 
 void DrawEngine::DrawBlock(POINT pos, COLORREF color)
@@ -64,13 +70,13 @@ void DrawEngine::DrawBlock(POINT pos, COLORREF color)
 void DrawEngine::DrawTetromino(const Tetromino& tet, char ch)
 {
 	POINT cen = tet.GetCenter();	// make _tetromino[1] as _center
-	std::vector<POINT> body(tet.GetBody());
-	
 	// create hbrush based on tetromino type;
 	COLORREF color = (COLORREF)(Color(tet.GetType()));
+	COLORREF gray = (COLORREF)(RGB(230, 230, 230));
+
 	if (ch == 'N' || ch == 'n')
 	{
-		for (auto t : body)
+		for (auto t : tet.GetBody())
 		{
 			t.x = _nextboardStartPos.x + t.x * basicPixel;
 			t.y = _nextboardStartPos.y + t.y * basicPixel;
@@ -79,14 +85,22 @@ void DrawEngine::DrawTetromino(const Tetromino& tet, char ch)
 	}
 	else if (ch == 'C' || ch == 'c')
 	{
-		for (auto t : body)
+		for (auto t : tet.GetBody())
 		{
 			t.x = _boardStartPos.x + t.x * basicPixel;
 			t.y = _boardStartPos.y + t.y * basicPixel;
 			DrawBlock(t, color);
 		}
 	}
-
+	else if (ch == 'P' || ch == 'p')
+	{
+		for (auto t : tet.GetPredict())
+		{
+			t.x = _boardStartPos.x + t.x * basicPixel;
+			t.y = _boardStartPos.y + t.y * basicPixel;
+			DrawBlock(t, gray);
+		}
+	}
 }
 
 void DrawEngine::DrawGameBoard(RECT &GameBoard)

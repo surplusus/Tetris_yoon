@@ -9,9 +9,12 @@
 
 class DrawEngine
 {
-private:
+public:
 	const int basicPixel = 25;
-	const RECT _rectGameBoard = { 50,50,50 + basicPixel * 8, 50 + basicPixel * 15 };
+	const int boardHeight = 15;
+	const int boardWidth = 10;
+private:
+	const RECT _rectGameBoard = { 50,50,50 + basicPixel * boardWidth, 50 + basicPixel * boardHeight };
 	HDC _hdc;
 	HDC _memDC[3];	//internal temporary memory Handle Device Context
 	HWND _hwnd;

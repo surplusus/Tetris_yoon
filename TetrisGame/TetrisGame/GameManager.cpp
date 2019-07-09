@@ -14,7 +14,6 @@ void GameManager::Update()
 	if (game->GetPause())
 		return;
 
-	game->UpdateBackBoard();
 	game->UpdateCurMino();
 	
 }

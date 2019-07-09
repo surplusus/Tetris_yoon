@@ -30,6 +30,12 @@ Tetromino * Game::GetTetromino(char CorN)
 		return nullptr;
 }
 
+std::vector<POINT>* Game::GetPileBoard()
+{
+	std::vector<POINT>* tmp = _gameboard->GetPile();
+	return tmp;
+}
+
 bool Game::IsAllSetUp()
 {
 	if (_curMino == nullptr || _nextMino == nullptr ||
@@ -56,28 +62,34 @@ void Game::SetKey(WPARAM wParam)
 
 void Game::UpdateCurMino()
 {
-	if (_nextMino == nullptr)
+	while (!IsAllSetUp())
 	{
-		_nextMino = new Tetromino(1,1);
-	}
-	
-	if (_curMino == nullptr)
-	{
-		POINT center = { 4,1 };
-		_curMino = _nextMino;
-		_curMino->SetCenter(center);
-		_curMino->SetBody(center);
-		_nextMino = new Tetromino(1,1);
-	}
-	_curMino->Update(_key,_gameboard);
+		if (_nextMino == nullptr)
+		{
+			_nextMino = new Tetromino(1, 1);
+		}
 
-	for (int k = 0; k < 5; ++k)
-		_key[k] = false;
+		if (_curMino == nullptr)
+		{
+			POINT center = { 4,0 };
+			_curMino = _nextMino;
+			_curMino->SetCenter(center);
+			_curMino->SetBody(center);
+			_nextMino = new Tetromino(1, 1);
+		}
+	}
+
+	UpdateKey();
+
+	_curMino->Update(_gameboard);
 
 	if (_curMino->IsBlockOnEnd())
 	{
 		for (auto t : _curMino->GetBody())
+		{
 			_gameboard->SetBoard(t, Background::FULL);
+			_gameboard->SetPile(t);
+		}
 		delete _curMino;
 	}
 }
@@ -85,6 +97,25 @@ void Game::UpdateCurMino()
 void Game::UpdateTime()
 {
 	_time->NowTime();
+}
+
+void Game::UpdateKey()
+{
+	// if press SPACE
+	if (_key[SPACE] == true)
+		_curMino->GoStrightDown();
+	// if press	ARROW
+	if (_key[UP] == true)
+		_curMino->Rotate();
+	if (_key[LEFT] == true)
+		_curMino->MoveLeft();
+	if (_key[RIGHT] == true)
+		_curMino->MoveRight();
+	if (_key[DOWN] == true)
+		_curMino->MoveDown();
+	// clear key
+	for (int k = 0; k < 5; ++k)
+		_key[k] = false;
 }
 
 bool Game::GameOver()
@@ -111,9 +142,3 @@ bool Game::SetPause()
 	_pause ^= _pause;
 	return _pause;
 }
-
-void Game::UpdateBackBoard()
-{
-	////////tetrimino가 끝까지 가면 vectortet 순회하며 full 표시
-}
-

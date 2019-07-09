@@ -30,6 +30,7 @@ public:		// Getter
 	int GetScore() { return _score; }
 	int GetTime() { return _time->NowTime(); }
 	bool GetPause() { return _pause; }
+	std::vector<POINT>* GetPileBoard();
 public:
 	bool IsAllSetUp();
 	void SetKey(WPARAM wParam);
@@ -37,8 +38,8 @@ public:
 	bool GameOver();
 	bool SetPause();
 public:		//update()
-	void UpdateBackBoard();
 	void UpdateCurMino();
 	void UpdateTime();
+	void UpdateKey();
 };
 

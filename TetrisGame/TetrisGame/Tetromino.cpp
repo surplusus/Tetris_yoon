@@ -8,6 +8,8 @@ Tetromino::Tetromino(int x, int y,	TETROMINO_TYPE type) : _type(type)
 	SetTetromino();
 	_body.resize(4);
 	SetBody(_center);
+	_predict.resize(4);
+	SetPredict();
 }
 
 void Tetromino::SetTetromino()
@@ -139,10 +141,14 @@ bool Tetromino::CheckValidPos()
 
 bool Tetromino::IsBlockOnEnd()
 {
-	if (_background->GetBoard(_bottom) != Background::EMPTY || _bottom.y <= 0)
+
+	SetPredict();
+	VECTORTETRO tmpbody = GetBody();
+	VECTORTETRO tmppredict = GetPredict();
+	for (int i = 0; i < 4; ++i)
 	{
-		life = false;
-		return true;
+		if (tmpbody[i].x == tmppredict[i].x && tmpbody[i].y == tmppredict[i].y)
+			return true;
 	}
 	return false;
 }
@@ -155,31 +161,37 @@ void Tetromino::SetBody(POINT center)
 		_body[i].x = _tetromino[i].x + _center.x;
 		_body[i].y = _tetromino[i].y + _center.y;
 	}
-	// set bottom as the lowest position
-	POINT bottom = { 0,0 };
-	for (auto t : _body)
-		bottom = (bottom.y < t.y) ? t : bottom;
-	_bottom = bottom;
+	
 }
 
-void Tetromino::Update(KEYVECTOR &key, Background* BG)
+void Tetromino::SetPredict()
+{
+	if (_background != nullptr)
+	{
+		int i, j;
+		int gap = boardHeight-1;
+		POINT tmp;
+		for (i = 0; i < 4; ++i)
+		{
+			_predict[i].x = tmp.x = _body[i].x;
+			for (j = 0; j < boardHeight; ++j)
+			{
+				tmp.y = j;
+				if (_background->GetBoard(tmp) != Background::EMPTY)
+					break;
+			}
+			gap = gap < (_body[i].y - tmp.y);
+			_predict[i] = tmp;
+		}
+	}
+}
+
+void Tetromino::Update(Background* BG)
 {
 	SetBackground(BG);
-	_center.y++;
-	// if press SPACE
-	if (key[SPACE] == true)				
-		GoStrightDown();
 
-	// if press	ARROW
-	if (key[UP] == true)
-		Rotate();
-	if (key[LEFT] == true)
-		MoveLeft();
-	if (key[RIGHT] == true)
-		MoveRight();
-	if (key[DOWN] == true)
+	if (CheckValidPos())
 		MoveDown();
-
 	
 	SetBackground(BG);
 	
