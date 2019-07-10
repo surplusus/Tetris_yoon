@@ -9,6 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TankDefence", "TankDefence\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BouncingPolygons", "BouncingPolygons\BouncingPolygons.vcxproj", "{97B4BADA-9133-4B65-84B5-E850CC2D64C0}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Tetris", "Tetris\Tetris.vcxproj", "{8BF40BE6-EA24-493A-BC4C-CEA5382C2E3B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -41,6 +43,14 @@ Global
 		{97B4BADA-9133-4B65-84B5-E850CC2D64C0}.Release|x64.Build.0 = Release|x64
 		{97B4BADA-9133-4B65-84B5-E850CC2D64C0}.Release|x86.ActiveCfg = Release|Win32
 		{97B4BADA-9133-4B65-84B5-E850CC2D64C0}.Release|x86.Build.0 = Release|Win32
+		{8BF40BE6-EA24-493A-BC4C-CEA5382C2E3B}.Debug|x64.ActiveCfg = Debug|x64
+		{8BF40BE6-EA24-493A-BC4C-CEA5382C2E3B}.Debug|x64.Build.0 = Debug|x64
+		{8BF40BE6-EA24-493A-BC4C-CEA5382C2E3B}.Debug|x86.ActiveCfg = Debug|Win32
+		{8BF40BE6-EA24-493A-BC4C-CEA5382C2E3B}.Debug|x86.Build.0 = Debug|Win32
+		{8BF40BE6-EA24-493A-BC4C-CEA5382C2E3B}.Release|x64.ActiveCfg = Release|x64
+		{8BF40BE6-EA24-493A-BC4C-CEA5382C2E3B}.Release|x64.Build.0 = Release|x64
+		{8BF40BE6-EA24-493A-BC4C-CEA5382C2E3B}.Release|x86.ActiveCfg = Release|Win32
+		{8BF40BE6-EA24-493A-BC4C-CEA5382C2E3B}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
