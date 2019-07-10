@@ -11,8 +11,8 @@ public:
 	~Game();
 private:
 	Key* m_Key;
-	Tetromino* m_CurTet;
-	Tetromino* m_NextTet;
+	UseTet* m_CurTet;
+	UseTet* m_NextTet;
 	TargetTet* m_Target;
 	Board* m_GameBoard;
 public:		// Interface

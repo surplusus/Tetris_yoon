@@ -38,10 +38,17 @@ public:
 	std::vector<Block*> m_Body;	// body = printer to Origin, movo to center
 private:
 	void SetBodyByOrigin();
+	bool CheckValidPos();
+	void GoStraightDown();
+	void MoveLeft();
+	void MoveRight();
+	void MoveDown();
+	void Rotate();
+	void InputKey(const std::vector<bool>* key);
 public:
 	const TET_TYPE GetType() const { return m_Type; }
 	virtual void Init();
-	virtual void Update();
+	virtual void Update(const std::vector<bool>* key);
 	virtual void Draw();
 };
 
@@ -58,8 +65,8 @@ public:
 public:
 	std::vector<Block*> m_Body;	// body = printer to Origin, movo to center
 public:
-	virtual void Init() {}	//	¾È¾²´Â ³ð
-	void Init(UseTet* cur);
+	//virtual void Init() {}	//	¾È¾²´Â ³ð
+	virtual void Init(UseTet* cur);
 	virtual void Update();
 	virtual void Draw();
 private:

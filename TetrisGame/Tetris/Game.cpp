@@ -28,6 +28,12 @@ void Game::InitAll()
 	m_GameBoard->Init();
 }
 
+void Game::Update()
+{
+
+	m_CurTet->Update(m_Key);
+}
+
 void Game::InputKey(const WPARAM & wParam)
 {
 	m_Key->SetKey(wParam);
