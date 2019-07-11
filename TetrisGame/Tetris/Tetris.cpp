@@ -19,7 +19,8 @@ HINSTANCE hInst;                                // 현재 인스턴스입니다.
 WCHAR szTitle[MAX_LOADSTRING];                  // 제목 표시줄 텍스트입니다.
 WCHAR szWindowClass[MAX_LOADSTRING];            // 기본 창 클래스 이름입니다.
 HWND g_hwnd; HDC g_hdc;
-Game* GM;	Renderer* RM;
+static Game* GM;	Renderer* RM;
+
 VOID CALLBACK TimeChecker(HWND hwnd, UINT uMsg, UINT idEvent, DWORD dwTime);
 
 // 이 코드 모듈에 포함된 함수의 선언을 전달합니다:
@@ -38,6 +39,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     // TODO: 여기에 코드를 입력합니다.
 
+
     // 전역 문자열을 초기화합니다.
     LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
     LoadStringW(hInstance, IDC_TETRIS, szWindowClass, MAX_LOADSTRING);
@@ -50,7 +52,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     }
 
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_TETRIS));
-
     MSG msg;
 
     // 기본 메시지 루프입니다:
@@ -134,15 +135,18 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+
     switch (message)
     {
 	case WM_CREATE:
 	{
-		MoveWindow(hWnd, 50, 50, 500, 450, TRUE);
+		GM = Game::GetInstance();
+		GM->InitAll();
+		RM = Renderer::GetInstance();
+		RM->Init(GM);
+		MoveWindow(hWnd, 50, 50, 500, 550, TRUE);
 		SetTimer(hWnd, 1, 100, (TIMERPROC)TimeChecker);
 		SetTimer(hWnd, 2, 100, NULL);
-		GM->InitAll();
-		RM->Init(GM);
 	}	break;
     case WM_COMMAND:
         {
@@ -162,13 +166,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }   break;
 	case WM_TIMER:
 	{
-		GM->Update();
-		InvalidateRgn(hWnd, NULL, TRUE);
+		GM->UpdateAll();
+		InvalidateRgn(hWnd, NULL, FALSE);
 	}	break;
 	case WM_KEYDOWN:
 	{
 		GM->InputKey(wParam);
-	}
+	}	break;
     case WM_PAINT:
         {
 		// for start setting of double buffering
@@ -199,11 +203,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 		((MINMAXINFO*)lParam)->ptMaxTrackSize.x = 500;
 		((MINMAXINFO*)lParam)->ptMinTrackSize.x = 500;
-		((MINMAXINFO*)lParam)->ptMaxTrackSize.y = 450;
-		((MINMAXINFO*)lParam)->ptMinTrackSize.y = 450;
+		((MINMAXINFO*)lParam)->ptMaxTrackSize.y = 550;
+		((MINMAXINFO*)lParam)->ptMinTrackSize.y = 550;
 		KillTimer(hWnd, 1);
 		KillTimer(hWnd, 2);
 		PostQuitMessage(0);
+		Renderer::ReleaseInstance();
+		Game::ReleaseInstance();
 		break;
 	}
     default:

@@ -2,13 +2,13 @@
 class Block
 {
 private:
-	const int BasicPixel = 25;
 	int x;
 	int y;
 	POINT pos;
 	RECT rect;
 	COLORREF color;
 public:
+	const int BasicPixel = 25;
 	enum COLOR_TYPE	{
 		WHITE=0, BLACK, GRAY, BLUE, MINT, 
 		LEMON, ORANGE,PINK,GREEN, RED
@@ -20,9 +20,10 @@ public:
 private:
 	void Color(COLOR_TYPE _color);
 public:
-	POINT GetPoint() { return pos; }
-	RECT GetRECT() { return rect; }
-	COLORREF GetColor() { return color; }
+	const POINT& GetPoint() const { return pos; }
+	const RECT& GetRECT() const { return rect; }
+	const COLORREF& GetColor() const { return color; }
+	void Extend(POINT pos);
 	void SetColor(COLOR_TYPE _color) { Color(_color); }
 	void SetPoint(POINT p);
 };

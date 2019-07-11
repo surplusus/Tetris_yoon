@@ -30,6 +30,12 @@ Block::Block(RECT _rect, COLOR_TYPE _color) : rect(_rect)
 	Color(_color);
 }
 
+void Block::Extend(POINT pos)
+{
+	rect.right = pos.x;
+	rect.bottom = pos.y;
+}
+
 void Block::SetPoint(POINT p)
 {
 	pos = p;

@@ -6,9 +6,18 @@
 
 class Game
 {
-public:
+private:
 	Game();
+	Game(Game& g);
 	~Game();
+	static Game* Instance;
+public:
+	static Game* GetInstance() {
+		if (!Instance)
+			Instance = new Game;
+		return Instance;}
+	static void ReleaseInstance() {
+		delete Instance;}
 private:
 	Key* m_Key;
 	UseTet* m_CurTet;
@@ -17,11 +26,9 @@ private:
 	Board* m_GameBoard;
 public:		// Interface
 	void InitAll();
-	void Update();
+	void UpdateAll();
 	void InputKey(const WPARAM& wParam);
-
-private:	// Mediator
-	
-	//void TetBodyToBoard(Object* ob);
+	void DrawAll();
+	const Board* GetBoard() const { return m_GameBoard; }
 };
 

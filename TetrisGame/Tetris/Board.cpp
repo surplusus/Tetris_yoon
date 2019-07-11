@@ -3,25 +3,46 @@
 
 Board::Board(Tetromino * tet) : m_Tetromino(tet)
 {
-	m_MainBoard = new std::vector<std::vector<bool>>(BoardHeight, std::vector<bool>(BoardWidth, false));
-	m_MiniBoard = new std::vector<std::vector<bool>>(MiniHegith, std::vector<bool>(MiniWidth, false));
+	//Init();
+}
 
+void Board::Init()
+{
+	m_MainBoard.resize(BoardHeight);
+	for (auto &B : m_MainBoard)
+	{
+		B.assign(BoardWidth, EMPTY);
+	}
+	m_MiniBoard.resize(BoardHeight);
+	for (auto &B : m_MiniBoard)
+	{
+		B.assign(BoardWidth, EMPTY);
+	}
 }
 
 void Board::Update()
 {
-	for (auto p : m_CheckPos)
-	{
-		m_MainBoard[p.y][p.x] = FULL;
-	}
-	m_CheckPos.clear();
+
 }
+
+void Board::Draw()
+{
+	Renderer* R = Renderer::GetInstance();
+	// draw filled block
+	R->DrawBG();
+	// draw filled block
+	for (auto &B : m_PileBlock)
+		R->DrawBlock(B);
+}
+
 
 void Board::NotePile(const std::vector<Block*> tet)
 {
-	for (auto t : tet)
+	for (auto &t : tet)
 	{
 		POINT p = t->GetPoint();
-		m_CheckPos.push_back(p);
+		m_MainBoard[p.y][p.x] = FULL;
+		Block B = Block(p, Block::BLACK);
+		m_PileBlock.push_back(B);
 	}
 }

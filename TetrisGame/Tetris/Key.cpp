@@ -20,3 +20,9 @@ void Key::ClearKey()
 	for (int i = 0; i < 5; ++i)
 		m_Key[i] = false;
 }
+
+bool Key::operator[](KEY_TYPE index)
+{
+	return Key::m_Key[index];
+}
+
