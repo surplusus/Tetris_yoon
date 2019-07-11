@@ -1,8 +1,6 @@
 #include "stdafx.h"
 #include "Game.h"
 #include "Tetromino.h"
-#include <iostream>
-using namespace std;
 
 Game* Game::Instance = nullptr;
 
@@ -53,13 +51,12 @@ void Game::InputKey(const WPARAM & wParam)
 
 void Game::DrawAll()
 {
-	cout << 1 << endl;
+	Renderer* R = Renderer::GetInstance();
+	R->SetFuncPtr("main");
 	m_GameBoard->Draw();
-	cout << 2 << endl;
-	m_NextTet->Draw();
-	cout << 3 << endl;
 	m_CurTet->Draw();
-	cout << 4 << endl;
 	m_Target->Draw();
-	cout << 5 << endl;
+	R->SetFuncPtr("mini");
+	m_NextTet->Draw();
+	
 }

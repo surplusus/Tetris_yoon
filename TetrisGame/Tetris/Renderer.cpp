@@ -8,6 +8,7 @@ void Renderer::Init(Game * GM)
 {
 	m_GM = Game::GetInstance();
 	hdc = nullptr;
+	block = nullptr;
 }
 
 void Renderer::Render(HDC & _hdc)
@@ -18,11 +19,12 @@ void Renderer::Render(HDC & _hdc)
 	m_GM->DrawAll();
 }
 
-void Renderer::DrawBlock(Block & block)
+void Renderer::DrawBlock(Block& b)
 {
-	COLORREF color = block.GetColor();
+	FuncPtr(b);
+	COLORREF color = block->GetColor();
 	HBRUSH hBrush = CreateSolidBrush(color);
-	RECT rect = block.GetRECT();
+	RECT rect = block->GetRECT();
 	FillRect(*hdc, &rect, hBrush);
 	DeleteObject(hBrush);
 }
@@ -41,4 +43,39 @@ void Renderer::DrawBG()
 	POINT miniendPos = { 320 + mmBB.BasicPixel * B->MiniWidth , 100 + mmBB.BasicPixel * B->MiniHegith };
 	mmBB.Extend(miniendPos);
 	DrawBlock(mmBB);
+}
+
+void Renderer::SetFuncPtr(const char * ch)
+{
+	Renderer* R = GetInstance();
+	if (ch == "main")
+	{
+		FuncPtr = FitInBoard;
+		return;
+	}
+	if (ch == "mini")
+	{
+		R->FuncPtr = R->FitInMiniBoard;
+		return;
+	}
+	std::cout << "함수포인터 에러" << std::endl;
+	return;
+}
+
+void Renderer::FitInBoard(Block & b)
+{
+	block = &b;
+	POINT p = block->GetPoint();
+	p.x = p.x * Board::BasicPixel + Board::StartPosX;
+	p.y = p.y * Board::BasicPixel + Board::StartPosY;
+	block->SetPoint(p);
+}
+
+void Renderer::FitInMiniBoard(Block & b)
+{
+	block = &b;
+	POINT p = block->GetPoint();
+	p.x = p.x * Board::BasicPixel + Board::StartMiniPosX;
+	p.y = p.y * Board::BasicPixel + Board::StartMiniPosY;
+	block->SetPoint(p);
 }

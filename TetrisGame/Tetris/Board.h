@@ -7,10 +7,15 @@ class Tetromino;
 class Board : public Object
 {
 public:
-	const int BoardHeight = 15;
-	const int BoardWidth = 10;
-	const int MiniHegith = 4;
-	const int MiniWidth = 3;
+	static const int BoardHeight = 15;
+	static const int BoardWidth = 10;
+	static const int MiniHegith = 4;
+	static const int MiniWidth = 3;
+	static const int StartPosX = 50;
+	static const int StartPosY = 50;
+	static const int StartMiniPosX = 320;
+	static const int StartMiniPosY = 100;
+	static const int BasicPixel = 25;
 	POINT StartPos = { 50,50 };
 	enum BOARD_TYPE {EMPTY = 0, FULL = 1};
 public:

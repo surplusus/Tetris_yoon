@@ -31,18 +31,25 @@ void Board::Draw()
 	// draw filled block
 	R->DrawBG();
 	// draw filled block
-	for (auto &B : m_PileBlock)
+	R->SetFuncPtr("main");
+	for (auto B : m_PileBlock)
+	{
 		R->DrawBlock(B);
+	}
+		
 }
 
 
 void Board::NotePile(const std::vector<Block*> tet)
 {
+	Renderer* R = Renderer::GetInstance();
+
 	for (auto &t : tet)
 	{
 		POINT p = t->GetPoint();
 		m_MainBoard[p.y][p.x] = FULL;
 		Block B = Block(p, Block::BLACK);
+
 		m_PileBlock.push_back(B);
 	}
 }

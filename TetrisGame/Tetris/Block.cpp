@@ -47,6 +47,16 @@ void Block::SetPoint(POINT p)
 	rect.bottom = y + BasicPixel;
 }
 
+Block Block::operator=(Block & b1)
+{
+	Block b;
+	b.x = b1.x;	b.y = b1.y;
+	b.pos = b1.pos;
+	b.rect = b1.rect;
+	b.color = b.color;
+	return b;
+}
+
 void Block::Color(COLOR_TYPE _color)
 {
 	switch (_color)

@@ -219,8 +219,10 @@ void UseTet::Draw()
 {
 	Renderer* R = Renderer::GetInstance();
 
-	for (auto b : m_Body)
-		R->DrawBlock(*b);
+	for (auto B : m_Body)
+	{
+		R->DrawBlock(*B);
+	}
 }
 
 //////////////TargetTet
@@ -340,7 +342,9 @@ void TargetTet::Draw()
 {
 	Renderer* R = Renderer::GetInstance();
 
-	for (auto b : m_Body)
-		R->DrawBlock(*b);
+	for (auto B : m_Body)
+	{
+		R->DrawBlock(*B);
+	}
 }
 

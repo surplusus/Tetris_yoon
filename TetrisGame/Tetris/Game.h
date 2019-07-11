@@ -30,5 +30,8 @@ public:		// Interface
 	void InputKey(const WPARAM& wParam);
 	void DrawAll();
 	const Board* GetBoard() const { return m_GameBoard; }
+	const UseTet* GetCurTet() const { return m_CurTet; }
+	const UseTet* GetNextTet() const { return m_NextTet; }
+	const TargetTet* GetTarget() const { return m_Target; }
 };
 
