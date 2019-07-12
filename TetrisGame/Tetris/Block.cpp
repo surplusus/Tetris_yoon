@@ -3,12 +3,13 @@
 
 Block::Block(int _x, int _y, COLOR_TYPE _color) : x(_x), y(_y)
 {
-	pos = { x,y };
+	pos.x = _x;
+	pos.y = _y;
 	rect.left = x;
 	rect.right = x + BasicPixel;
 	rect.top = y;
 	rect.bottom = y + BasicPixel;
-	Color(_color);
+	SetColor(_color);
 }
 
 Block::Block(POINT _pos, COLOR_TYPE _color) : pos(_pos)
@@ -19,15 +20,16 @@ Block::Block(POINT _pos, COLOR_TYPE _color) : pos(_pos)
 	rect.right = x + BasicPixel;
 	rect.top = y;
 	rect.bottom = y + BasicPixel;
-	Color(_color);
+	SetColor(_color);
 }
 
 Block::Block(RECT _rect, COLOR_TYPE _color) : rect(_rect)
 {
 	x = rect.left;
 	y = rect.top;
-	pos = { x,y };
-	Color(_color);
+	pos.x = x;
+	pos.y = y;
+	SetColor(_color);
 }
 
 void Block::Extend(POINT pos)
@@ -36,28 +38,7 @@ void Block::Extend(POINT pos)
 	rect.bottom = pos.y;
 }
 
-void Block::SetPoint(POINT p)
-{
-	pos = p;
-	x = p.x;
-	y = p.y;
-	rect.left = x;
-	rect.right = x + BasicPixel;
-	rect.top = y;
-	rect.bottom = y + BasicPixel;
-}
-
-Block Block::operator=(Block & b1)
-{
-	Block b;
-	b.x = b1.x;	b.y = b1.y;
-	b.pos = b1.pos;
-	b.rect = b1.rect;
-	b.color = b.color;
-	return b;
-}
-
-void Block::Color(COLOR_TYPE _color)
+void Block::SetColor(COLOR_TYPE _color)
 {
 	switch (_color)
 	{
@@ -88,7 +69,42 @@ void Block::Color(COLOR_TYPE _color)
 	case RED:
 		color = static_cast<COLORREF>(RGB(204, 51, 0));
 		break;
+	case GRAY:
+		color = static_cast<COLORREF>(RGB(204, 204, 204));
+	case DARKGRAY:
+		color = static_cast<COLORREF>(RGB(104, 104, 104));
 	default:
 		break;
 	}
+}
+
+void Block::SetPoint(POINT p)
+{
+	pos = p;
+	x = p.x;
+	y = p.y;
+	rect.left = x;
+	rect.right = x + BasicPixel;
+	rect.top = y;
+	rect.bottom = y + BasicPixel;
+}
+
+void Block::SetXY(int _x, int _y)
+{
+	pos = {_x, _y};
+	x = _x;
+	y = _y;
+	rect.left = _x;
+	rect.right = _x + BasicPixel;
+	rect.top = _y;
+	rect.bottom = _y + BasicPixel;
+}
+
+Block* Block::operator=(const Block & b1)
+{
+	this->x = b1.x;	this->y = b1.y;
+	this->pos = b1.pos;
+	this->rect = b1.rect;
+	this->color = b1.color;
+	return this;
 }

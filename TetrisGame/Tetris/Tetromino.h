@@ -5,6 +5,7 @@
 class Board;
 class Key;
 class Block;
+class TargetTet;
 
 class Tetromino : public Object
 {
@@ -18,7 +19,6 @@ public:
 				TET_O, TET_S, TET_T, TET_Z, GRAY};
 public:
 	std::vector<Block*> GetOrigin(Tetromino::TET_TYPE type);
-
 	void SetOrigin();
 	virtual void Init() {}
 	virtual void Update() {}
@@ -36,18 +36,25 @@ private:
 	TET_TYPE m_Type;
 	Board* m_GameBoard;
 	Key* m_key;
+	TargetTet* m_Target;
+	
 public:
+	bool IsActive = false;
 	std::vector<Block*> m_Body;	// body = printer to Origin, movo to center
 private:
 	void SetBodyByOrigin();
 	bool CheckValidPos();
+	bool CheckValidPos(POINT & pos);
 	void GoStraightDown();
 	void MoveLeft();
 	void MoveRight();
-	void MoveDown();
 	void Rotate();
-	
+	void Restart();
 public:
+	std::vector<Block*> GetOrigin() { return m_origin->GetOrigin(m_Type); }
+	void TurnOnActive(TargetTet* target);
+	void MoveDown();
+	void SetCenPos(int x, int y) { m_CenPos.x = x; m_CenPos.y = y; }
 	void SetBoardKey(Board* GB, Key* key) {
 		m_GameBoard = GB, m_key = key;	}
 	void ApplyKey(const Key* key);
@@ -61,11 +68,11 @@ public:
 class TargetTet : public Tetromino
 {
 private:
-	Tetromino* m_origin;
+	//Tetromino* m_origin;
 	POINT m_CenPos;
 	TET_TYPE m_Type;
 	Board* m_GameBoard;
-	UseTet* Model;
+	UseTet* m_Model;
 public:
 	TargetTet(Board* B);
 	virtual ~TargetTet();
@@ -75,12 +82,15 @@ public:
 	virtual void Init();
 	virtual void Update();
 	virtual void Draw();
-	void SetModel(UseTet* cur) { Model = cur; }
-	void SetBoard(Board* GB) { m_GameBoard = GB; }
 private:
-	void SetColor(Tetromino::TET_TYPE Type);
-	void SetTargetPos();
-	void SetBodyByOrigin();
+	void SetColor();
+	void SetBodyPosByBoard();
+	void SetBodyByModel();
 	bool CheckValidPos();
+	void Remodel();
+public:
+	void SetModel(UseTet* cur) { m_Model = cur; }
+	void SetBoard(Board* GB) { m_GameBoard = GB; }
+	const POINT GetCenPos() const { return m_CenPos; }
 };
 

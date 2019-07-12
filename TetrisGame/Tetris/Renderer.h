@@ -15,22 +15,23 @@ public:
 		return Instance;
 	}
 	static void ReleaseInstance() {
+		delete Instance->block;
 		delete Instance;
 	}
 private:
 	Game* m_GM;
 	HDC* hdc;	// internal temporary variable
 	Block* block;// internal temporary variable
-	
-	
-	void FitInMiniBoard(Block& block);
+	void FitInBoard(const Block& block);
+	void FitInMiniBoard(const Block& block);
+	void FitInBackBoard(const Block& block);
 public:
 	void Init(Game* GM);
 	void Render(HDC& hdc);
 public:
-	void FitInBoard(Block& block);
+
 	enum FUNC_TYPE{MAIN=0, MINI=1};
-	void (Renderer::*FuncPtr)(Block&);
+	void (Renderer::*FuncPtr)(const Block&);
 	void DrawBlock(Block& block);
 	void DrawBG();
 	void SetFuncPtr(const char* ch);	//"main", "mini"

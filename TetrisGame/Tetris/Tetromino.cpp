@@ -55,7 +55,7 @@ void Tetromino::SetOrigin()
 	// Tetromino::TET_Z:
 		m_Origin[TET_Z][0] = new Block(0, 1, Block::RED);
 		m_Origin[TET_Z][1] = new Block(0, 0, Block::RED);
-		m_Origin[TET_Z][2] = new Block(-1, -1, Block::RED);
+		m_Origin[TET_Z][2] = new Block(0, -1, Block::RED);
 		m_Origin[TET_Z][3] = new Block(1, 0, Block::RED);
 }
 
@@ -82,8 +82,7 @@ std::vector<Block*> Tetromino::GetOrigin(Tetromino::TET_TYPE type)
 	}
 }
 
-
-//////////////UseTet
+//////////////Use & Target 공통부분//////////
 UseTet::UseTet(Board * B) : m_GameBoard(B)
 {
 	m_origin = new Tetromino;
@@ -97,17 +96,116 @@ UseTet::~UseTet()
 		delete B;
 }
 
+TargetTet::TargetTet(Board * B) : m_GameBoard(B)
+{
+	m_CenPos = { 4,13 };
+	m_Body.resize(4);
+}
+
+TargetTet::~TargetTet()
+{
+	for (auto &B : m_Body)
+		delete B;
+}
+
+void UseTet::Init()
+{
+	m_CenPos = { 4,1 };
+	m_Type = static_cast<Tetromino::TET_TYPE>(rand() % 7);
+	m_Target = nullptr;
+	for (int i = 0; i < 4; ++i)
+		m_Body[i] = new Block(*(m_origin->GetOrigin(m_Type)[i]));
+	SetBodyByOrigin();
+}
+
+void TargetTet::Init()
+{
+	m_CenPos = m_Model->m_Body[1]->GetPoint();
+	m_CenPos.y = 13;
+	m_Type = m_Model->GetType();
+	for (int i = 0; i < 4; ++i)
+		m_Body[i] = new Block(*(m_Model->GetOrigin()[i]));
+	//SetBodyByOrigin();
+	SetColor();	// GRAY
+}
+
+void UseTet::Update()
+{
+	if (m_GameBoard->GetBoardType(m_CenPos) == Board::FULL)
+	{
+		std::cout << "gameover" << std::endl;
+		return;
+	}
+	if (IsActive)
+	{
+		MoveDown();
+		int DeadFlag = 0;
+		for (int i = 0; i < 4; ++i)
+		{
+			POINT me = m_Body[i]->GetPoint();
+			POINT you = m_Target->m_Body[i]->GetPoint();
+			if (me.x == you.x && me.y == you.y)
+				DeadFlag++;
+		}
+		if (DeadFlag == 4)
+		{
+			m_GameBoard->Update();
+			Restart();
+		}
+	}
+	SetBodyByOrigin();
+
+}
+
+void TargetTet::Update()
+{
+	Remodel();
+	//SetBodyPosByBoard();
+	m_CenPos = m_Body[1]->GetPoint();
+}
+
+void UseTet::Draw()
+{
+	Renderer* R = Renderer::GetInstance();
+
+	for (auto B : m_Body)
+	{
+		R->DrawBlock(*B);
+	}
+}
+
+void TargetTet::Draw()
+{
+	Renderer* R = Renderer::GetInstance();
+
+	for (auto B : m_Body)
+	{
+		R->DrawBlock(*B);
+	}
+}
+
+/////////
+
 void UseTet::SetBodyByOrigin()
 {
 	std::vector<Block*> origin = m_origin->GetOrigin(m_Type);
 	for (int i = 0; i < 4; ++i)
 	{
-		m_Body[i] = new Block(*(origin[i]));
-		POINT p = m_Body[i]->GetPoint();
+		POINT p = origin[i]->GetPoint();
 		p.x += m_CenPos.x;
 		p.y += m_CenPos.y;
 		m_Body[i]->SetPoint(p);
 	}
+}
+
+void TargetTet::SetBodyByModel()
+{
+	for (int i = 0; i < 4; ++i)
+	{
+		POINT p = m_Model->m_Body[i]->GetPoint();
+		m_Body[i]->SetPoint(p);
+	}
+	m_CenPos = m_Model->m_Body[1]->GetPoint();
 }
 
 bool UseTet::CheckValidPos()
@@ -129,57 +227,108 @@ bool UseTet::CheckValidPos()
 	return true;
 }
 
+bool UseTet::CheckValidPos(POINT & p)
+{
+	int width = m_GameBoard->BoardWidth;
+	int height = m_GameBoard->BoardHeight;
+	if (p.x <= 0 || p.x >= width)	// boundary of gameboard
+		return false;
+	if (p.y < 0 || p.y >= height)				// boundary of gameboard
+		return false;
+	if (m_GameBoard->GetBoardType(p))
+		return false;
+	
+	return true;
+}
+
+bool TargetTet::CheckValidPos()
+{
+	int width = m_GameBoard->BoardWidth-1;
+	int height = m_GameBoard->BoardHeight-1;
+
+	for (auto body : m_Body)
+	{
+		POINT p = body->GetPoint();
+		p.y++;
+		if (p.x < 0 || p.x > width)	// boundary of gameboard
+			return false;
+		if (p.y < 0 || p.y > height)	// boundary of gameboard
+			return false;
+		if (m_GameBoard->GetBoardType(p))
+			return false;
+	}
+	return true;
+}
+
+//////////////UseTet/////////
+
 void UseTet::GoStraightDown()
 {
-	while (CheckValidPos())
+	while (!CheckValidPos())
 		MoveDown();
 }
 
 void UseTet::MoveLeft()
 {
-	m_CenPos.x--;
-	if (CheckValidPos())
-		return;
-	else
-		m_CenPos.x++;
+	if((m_CenPos.x - 1) >= 0)
+		m_CenPos.x--;
 }
 
 void UseTet::MoveRight()
 {
-	m_CenPos.x++;
-	if (CheckValidPos())
-		return;
-	else
-		m_CenPos.x--;
+	//m_CenPos.x++;
+	///*if (CheckValidPos())
+	//	return;
+	//else
+	//	m_CenPos.x--;*/
+	//while (!CheckValidPos())
+	//	m_CenPos.x--;
+	if ((m_CenPos.y + 1) < Board::BoardWidth)
+		m_CenPos.x++;
 }
 
 void UseTet::MoveDown()
 {
-	m_CenPos.y++;
-	if (CheckValidPos())
-		return;
-	else
-		m_CenPos.y--;
+	if ((m_CenPos.y + 1) <= Board::BoardHeight && CheckValidPos())
+		m_CenPos.y++;
 }
 
 void UseTet::Rotate()
 {
 	// rotate each blocks in counter-clockwise
-	std::vector<Block*> tmp = m_Body;
-	
-	for (auto &t : m_Body)		
+	std::vector<POINT> tmp;
+	for (int i = 0; i < 4; ++i)
+		tmp.push_back(m_Body[i]->GetPoint());
+	int DeadFlag = 0;
+	POINT center = tmp[1];
+
+	for (auto &p : tmp)
 	{
-		POINT p = t->GetPoint();
-		std::swap(p.x, p.y);
-		p.x = -p.x;
-		t->SetPoint(p);
+		POINT t = p;
+		p.x = center.x - (center.y - t.y);
+		p.y = center.y + (center.x - t.x);
+		if (!CheckValidPos(p))
+			DeadFlag++;
 	}
 
-	if (CheckValidPos())
-		return;
-	else
-		m_Body = tmp;
-		return;
+	if (!DeadFlag)
+	{
+		for (int i = 0; i < 4; ++i)
+			m_Body[i]->SetPoint(tmp[i]);
+	}
+}
+
+void UseTet::TurnOnActive(TargetTet* target)
+{
+	IsActive = true;
+	m_Target = target;
+}
+
+void UseTet::Restart()
+{
+	m_CenPos = { 4,1 };
+	m_Type = static_cast<Tetromino::TET_TYPE>(rand() % 7);
+	SetBodyByOrigin();
 }
 
 void UseTet::ApplyKey(const Key* key)
@@ -197,75 +346,33 @@ void UseTet::ApplyKey(const Key* key)
 		Rotate();
 }
 
-void UseTet::Init()
-{
-	m_CenPos = { 4,1 };
-	m_Type = static_cast<Tetromino::TET_TYPE>(rand() % 7);
-	SetBodyByOrigin();
-}
 
-void UseTet::Update()
+
+//////////////TargetTet/////////
+void TargetTet::Remodel()
 {
-	MoveDown();
-	/*if (!CheckValidPos())
-	{
-		m_GameBoard->NotePile(m_Body);
-		return;
-	}*/
+	m_Type = m_Model->GetType();
+	SetColor();
+	SetBodyByModel();
 	
-}
-
-void UseTet::Draw()
-{
-	Renderer* R = Renderer::GetInstance();
-
-	for (auto B : m_Body)
+	while(CheckValidPos())
 	{
-		R->DrawBlock(*B);
+		for (auto B : m_Body)
+		{
+			POINT p = B->GetPoint();
+			p.y++;
+			B->SetPoint(p);
+		}
 	}
 }
 
-//////////////TargetTet
-void TargetTet::SetColor(Tetromino::TET_TYPE Type)
+void TargetTet::SetColor()
 {
-	switch (Type)
-	{
-	case Tetromino::TET_I:
-		for (auto B : m_Body)
-			B->SetColor(Block::BLUE);
-		break;
-	case Tetromino::TET_J:
-		for (auto B : m_Body)
-			B->SetColor(Block::GREEN);
-		break;
-	case Tetromino::TET_L:
-		for (auto B : m_Body)
-			B->SetColor(Block::LEMON);
-		break;
-	case Tetromino::TET_O:
-		for (auto B : m_Body)
-			B->SetColor(Block::MINT);
-		break;
-	case Tetromino::TET_S:
-		for (auto B : m_Body)
-			B->SetColor(Block::ORANGE);
-		break;
-	case Tetromino::TET_T:
-		for (auto B : m_Body)
-			B->SetColor(Block::PINK);
-		break;
-	case Tetromino::TET_Z:
-		for (auto B : m_Body)
-			B->SetColor(Block::RED);
-		break;
-	case Tetromino::GRAY:
-		for (auto B : m_Body)
-			B->SetColor(Block::GRAY);
-		break;
-	}
+	for (auto &B : m_Body)
+		B->SetColor(Block::COLOR_TYPE::ORANGE);
 }
 
-void TargetTet::SetTargetPos()
+void TargetTet::SetBodyPosByBoard()
 {
 
 	while (!CheckValidPos())
@@ -279,72 +386,3 @@ void TargetTet::SetTargetPos()
 	}
 		
 }
-
-void TargetTet::SetBodyByOrigin()
-{
-	std::vector<Block*> origin = m_origin->GetOrigin(m_Type);
-	for (int i = 0; i < 4; ++i)
-	{
-		m_Body[i] = new Block(*(origin[i]));
-		POINT p = m_Body[i]->GetPoint();
-		p.x += m_CenPos.x;
-		p.y += m_CenPos.y;
-		m_Body[i]->SetPoint(p);
-	}
-}
-
-bool TargetTet::CheckValidPos()
-{
-	const int EMPTY = 0;
-	int width = m_GameBoard->BoardWidth;
-	int height = m_GameBoard->BoardHeight;
-
-	for (auto body : m_Body)
-	{
-		POINT p = body->GetPoint();
-		if (p.x <= 0 || p.x >= width)	// boundary of gameboard
-			return false;
-		if (p.y < 0 || p.y >= height)	// boundary of gameboard
-			return false;
-		if (m_GameBoard->GetBoardType(p))
-			return false;
-	}
-	return true;
-}
-
-TargetTet::TargetTet(Board * B) : m_GameBoard(B)
-{
-	m_origin = new Tetromino;
-	m_CenPos = { 4,14 };
-	m_Body.resize(4);
-}
-
-TargetTet::~TargetTet()
-{
-	for (auto &B : m_Body)
-		delete B;
-}
-
-void TargetTet::Init()
-{
-	m_Type = Model->GetType();
-	SetBodyByOrigin();
-	SetColor(Tetromino::GRAY);
-}
-
-void TargetTet::Update()
-{
-	SetTargetPos();
-	m_CenPos = m_Body[1]->GetPoint();
-}
-
-void TargetTet::Draw()
-{
-	Renderer* R = Renderer::GetInstance();
-
-	for (auto B : m_Body)
-	{
-		R->DrawBlock(*B);
-	}
-}
-

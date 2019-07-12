@@ -1,9 +1,9 @@
 #include "stdafx.h"
 #include "Board.h"
 
-Board::Board(Tetromino * tet) : m_Tetromino(tet)
+Board::Board(TargetTet * tet)
 {
-	//Init();
+	m_Target = tet;
 }
 
 void Board::Init()
@@ -13,16 +13,11 @@ void Board::Init()
 	{
 		B.assign(BoardWidth, EMPTY);
 	}
-	m_MiniBoard.resize(BoardHeight);
-	for (auto &B : m_MiniBoard)
-	{
-		B.assign(BoardWidth, EMPTY);
-	}
 }
 
 void Board::Update()
 {
-
+	NotePile();
 }
 
 void Board::Draw()
@@ -39,17 +34,15 @@ void Board::Draw()
 		
 }
 
-
-void Board::NotePile(const std::vector<Block*> tet)
+void Board::NotePile()
 {
 	Renderer* R = Renderer::GetInstance();
 
-	for (auto &t : tet)
+	for (auto t : m_Target->m_Body)
 	{
 		POINT p = t->GetPoint();
 		m_MainBoard[p.y][p.x] = FULL;
-		Block B = Block(p, Block::BLACK);
-
+		Block B = Block(p, Block::RED);
 		m_PileBlock.push_back(B);
 	}
 }

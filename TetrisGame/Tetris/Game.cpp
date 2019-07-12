@@ -10,7 +10,7 @@ Game::Game()
 	m_CurTet = new UseTet(m_GameBoard);
 	m_NextTet = new UseTet(m_GameBoard);
 	m_Target = new TargetTet(m_GameBoard);
-	m_GameBoard = new Board(m_CurTet);
+	m_GameBoard = new Board(m_Target);
 }
 
 Game::~Game()
@@ -31,15 +31,18 @@ void Game::InitAll()
 	m_Target->SetModel(m_CurTet);
 	m_Target->SetBoard(m_GameBoard);
 	m_Target->Init();
+	m_CurTet->TurnOnActive(m_Target);
 	m_GameBoard->Init();
+
 }
 
 void Game::UpdateAll()
 {
-	m_GameBoard->Update();
 	m_CurTet->ApplyKey(m_Key);
 	m_Key->ClearKey();
+	m_Target->Update();
 	m_CurTet->Update();
+	m_NextTet->SetCenPos(1, 1);
 	m_NextTet->Update();
 	
 }
@@ -52,8 +55,9 @@ void Game::InputKey(const WPARAM & wParam)
 void Game::DrawAll()
 {
 	Renderer* R = Renderer::GetInstance();
-	R->SetFuncPtr("main");
+	R->SetFuncPtr("back");
 	m_GameBoard->Draw();
+	R->SetFuncPtr("main");
 	m_CurTet->Draw();
 	m_Target->Draw();
 	R->SetFuncPtr("mini");

@@ -241,4 +241,5 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 VOID CALLBACK TimeChecker(HWND hwnd, UINT uMsg, UINT idEvent, DWORD dwTime)
 {
 	//>>> 시간을 재는 곳
+	
 }
