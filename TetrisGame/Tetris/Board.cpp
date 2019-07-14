@@ -8,6 +8,8 @@ Board::Board(TargetTet * tet)
 
 void Board::Init()
 {
+	GameProcesser* GP = GameProcesser::GetInstance();
+	GP->SetTheirPtrs(this);
 	m_MainBoard.resize(BoardHeight);
 	for (auto &B : m_MainBoard)
 	{

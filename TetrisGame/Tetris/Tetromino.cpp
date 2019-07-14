@@ -57,6 +57,11 @@ void Tetromino::SetOrigin()
 		m_Origin[TET_Z][1] = new Block(0, 0, Block::RED);
 		m_Origin[TET_Z][2] = new Block(0, -1, Block::RED);
 		m_Origin[TET_Z][3] = new Block(1, 0, Block::RED);
+	// Tetromino::GRAY:
+		m_Origin[GRAY][0] = new Block(0, 0, Block::GRAY);
+		m_Origin[GRAY][1] = new Block(0, 0, Block::GRAY);
+		m_Origin[GRAY][2] = new Block(0, 0, Block::GRAY);
+		m_Origin[GRAY][3] = new Block(0, 0, Block::GRAY);
 }
 
 std::vector<Block*> Tetromino::GetOrigin(Tetromino::TET_TYPE type)
@@ -77,21 +82,53 @@ std::vector<Block*> Tetromino::GetOrigin(Tetromino::TET_TYPE type)
 		return m_Origin[TET_T];
 	case TET_Z:
 		return m_Origin[TET_Z];
+	case GRAY:
+		return GetGrayBlock(m_type);
 	default:
 		break;
 	}
 }
 
-//////////////Use & Target 공통부분//////////
-UseTet::UseTet(Board * B) : m_GameBoard(B)
+std::vector<Block*> Tetromino::GetGrayBlock(TET_TYPE type)
+{
+	m_type = type;
+	for (int i = 0; i < 4; ++i)
+	{
+		POINT p = GetOrigin(m_type)[i]->GetPoint();
+		m_Origin[GRAY][i]->SetPoint(p);
+	}
+	return m_Origin[GRAY];
+}
+
+//////////////Children 공통부분//////////
+MovingTet::MovingTet(Board * B) : m_GameBoard(B)
+{
+	m_origin = new Tetromino;
+	m_GameBoard = nullptr;
+	m_key = nullptr;
+	m_Target = nullptr;	
+	m_NextTet = nullptr;
+	m_Body.resize(4);
+	srand(static_cast<unsigned int>(time(NULL)));
+}
+
+MovingTet::~MovingTet()
+{
+	delete m_origin;
+	for (auto &B : m_Body)
+		delete B;
+}
+
+NotMovingTet::NotMovingTet()
 {
 	m_origin = new Tetromino;
 	m_Body.resize(4);
 	srand(static_cast<unsigned int>(time(NULL)));
 }
 
-UseTet::~UseTet()
+NotMovingTet::~NotMovingTet()
 {
+	delete m_origin;
 	for (auto &B : m_Body)
 		delete B;
 }
@@ -104,67 +141,75 @@ TargetTet::TargetTet(Board * B) : m_GameBoard(B)
 
 TargetTet::~TargetTet()
 {
+	m_GameBoard = nullptr;
+	m_Model = nullptr;
 	for (auto &B : m_Body)
 		delete B;
 }
 
-void UseTet::Init()
+void MovingTet::Init()
 {
 	m_CenPos = { 4,1 };
 	m_Type = static_cast<Tetromino::TET_TYPE>(rand() % 7);
+	GameProcesser* GP = GameProcesser::GetInstance();
+	GP->SetTheirPtrs(this);
 	m_Target = nullptr;
 	for (int i = 0; i < 4; ++i)
 		m_Body[i] = new Block(*(m_origin->GetOrigin(m_Type)[i]));
 	SetBodyByOrigin();
 }
 
-void TargetTet::Init()
+void NotMovingTet::Init()
 {
-	m_CenPos = m_Model->m_Body[1]->GetPoint();
-	m_CenPos.y = 13;
-	m_Type = m_Model->GetType();
+	m_CenPos = { 1,1 };
+	m_Type = static_cast<Tetromino::TET_TYPE>(rand() % 7);
+	GameProcesser* GP = GameProcesser::GetInstance();
+	GP->SetTheirPtrs(this);
 	for (int i = 0; i < 4; ++i)
-		m_Body[i] = new Block(*(m_Model->GetOrigin()[i]));
-	//SetBodyByOrigin();
-	SetColor();	// GRAY
+		m_Body[i] = new Block(*(m_origin->GetOrigin(m_Type)[i]));
+	SetBodyByOrigin();
+
 }
 
-void UseTet::Update()
+void TargetTet::Init()
 {
+	GameProcesser* GP = GameProcesser::GetInstance();
+	GP->SetTheirPtrs(this);
+	m_Type = m_Model->GetType();
+	for (int i = 0; i < 4; ++i)
+		m_Body[i] = new Block(*(m_Model->m_Body[i]));
+	SetBodyByModel();
+}
+
+void MovingTet::Update()
+{
+	GameProcesser* GP = GameProcesser::GetInstance();
 	if (m_GameBoard->GetBoardType(m_CenPos) == Board::FULL)
 	{
 		std::cout << "gameover" << std::endl;
+		GP->m_IsGameOver = true;
 		return;
 	}
-	if (IsActive)
+	MoveDown();
+	if (IsDeadEnd())
 	{
-		MoveDown();
-		int DeadFlag = 0;
-		for (int i = 0; i < 4; ++i)
-		{
-			POINT me = m_Body[i]->GetPoint();
-			POINT you = m_Target->m_Body[i]->GetPoint();
-			if (me.x == you.x && me.y == you.y)
-				DeadFlag++;
-		}
-		if (DeadFlag == 4)
-		{
-			m_GameBoard->Update();
-			Restart();
-		}
+		GP->CurTetOnDeadEnd();
 	}
-	SetBodyByOrigin();
+}
 
+void NotMovingTet::Update()
+{
+	m_CurTet->Restart();
+	Renewal();
 }
 
 void TargetTet::Update()
 {
 	Remodel();
-	//SetBodyPosByBoard();
-	m_CenPos = m_Body[1]->GetPoint();
+	SetValidBodyByBoard();
 }
 
-void UseTet::Draw()
+void MovingTet::Draw()
 {
 	Renderer* R = Renderer::GetInstance();
 
@@ -184,9 +229,26 @@ void TargetTet::Draw()
 	}
 }
 
-/////////
+void NotMovingTet::Draw()
+{
 
-void UseTet::SetBodyByOrigin()
+}
+
+//////////////SetBody & CheckValiPos//////////
+
+void MovingTet::SetBodyByOrigin()
+{
+	std::vector<Block*> origin = m_origin->GetOrigin(m_Type);
+	for (int i = 0; i < 4; ++i)
+	{
+		POINT p = origin[i]->GetPoint();
+		p.x += m_CenPos.x;
+		p.y += m_CenPos.y;
+		m_Body[i]->SetPoint(p);
+	}
+}
+
+void NotMovingTet::SetBodyByOrigin()
 {
 	std::vector<Block*> origin = m_origin->GetOrigin(m_Type);
 	for (int i = 0; i < 4; ++i)
@@ -202,13 +264,14 @@ void TargetTet::SetBodyByModel()
 {
 	for (int i = 0; i < 4; ++i)
 	{
+		m_Body[i] = m_Model->GetOrigin()->GetGrayBlock(m_Type)[i];
 		POINT p = m_Model->m_Body[i]->GetPoint();
 		m_Body[i]->SetPoint(p);
 	}
-	m_CenPos = m_Model->m_Body[1]->GetPoint();
+	m_CenPos = m_Body[1]->GetPoint();
 }
 
-bool UseTet::CheckValidPos()
+bool MovingTet::CheckValidPos()
 {
 	const int EMPTY = 0;
 	int width = m_GameBoard->BoardWidth;
@@ -227,7 +290,7 @@ bool UseTet::CheckValidPos()
 	return true;
 }
 
-bool UseTet::CheckValidPos(POINT & p)
+bool MovingTet::CheckValidPos(POINT & p)
 {
 	int width = m_GameBoard->BoardWidth;
 	int height = m_GameBoard->BoardHeight;
@@ -241,97 +304,136 @@ bool UseTet::CheckValidPos(POINT & p)
 	return true;
 }
 
-bool TargetTet::CheckValidPos()
+bool MovingTet::CheckValidPos(void(MovingTet::*Func)(void))
 {
-	int width = m_GameBoard->BoardWidth-1;
-	int height = m_GameBoard->BoardHeight-1;
-
-	for (auto body : m_Body)
+	//MoveFunc = Func;
+	if (Func == &MovingTet::MoveDown)
 	{
-		POINT p = body->GetPoint();
-		p.y++;
-		if (p.x < 0 || p.x > width)	// boundary of gameboard
-			return false;
-		if (p.y < 0 || p.y > height)	// boundary of gameboard
-			return false;
-		if (m_GameBoard->GetBoardType(p))
+		for (auto B : m_Body)
+		{
+			POINT p = B->GetPoint();
+			p.y++;
+			if (m_GameBoard->GetBoardType(p))
+				return false;
+		}
+	}
+	else if (Func == &MovingTet::MoveRight)
+	{
+		for (auto B : m_Body)
+		{
+			POINT p = B->GetPoint();
+			p.x++;
+			if (m_GameBoard->GetBoardType(p))
+				return false;
+		}
+	}
+	else if (Func == &MovingTet::MoveLeft)
+	{
+		for (auto B : m_Body)
+		{
+			POINT p = B->GetPoint();
+			p.x--;
+			if (m_GameBoard->GetBoardType(p))
+				return false;
+		}
+	}
+	else if (Func == &MovingTet::Rotate)
+	{
+		for (auto B : m_Body)
+		{
+			POINT p, t;
+			p = t = B->GetPoint();
+			p.x = m_Body[1]->GetPoint().x - (m_Body[1]->GetPoint().y - t.y);
+			p.y = m_Body[1]->GetPoint().y + (m_Body[1]->GetPoint().x - t.x);
+			if (m_GameBoard->GetBoardType(p))
+				return false;
+		}
+	}
+	return true;
+}
+
+bool TargetTet::CheckValidPos(std::vector<POINT> &points)
+{
+	for (int i = 0; i < 4; ++i)
+	{
+		bool isFull = m_GameBoard->GetBoardType(points[i]);
+		if (isFull)
 			return false;
 	}
 	return true;
 }
 
-//////////////UseTet/////////
+//////////////Current Movint Tetromino//////////
 
-void UseTet::GoStraightDown()
+void MovingTet::GoStraightDown()
 {
-	while (!CheckValidPos())
+	while (CheckValidPos(&MovingTet::MoveDown))
 		MoveDown();
 }
 
-void UseTet::MoveLeft()
+void MovingTet::MoveLeft()
 {
-	if((m_CenPos.x - 1) >= 0)
-		m_CenPos.x--;
+	if (CheckValidPos(&MovingTet::MoveLeft))
+	{
+		for (auto &B : m_Body)
+			B->SetXY(B->GetPoint().x - 1, B->GetPoint().y);
+	}
 }
 
-void UseTet::MoveRight()
+void MovingTet::MoveRight()
 {
-	//m_CenPos.x++;
-	///*if (CheckValidPos())
-	//	return;
-	//else
-	//	m_CenPos.x--;*/
-	//while (!CheckValidPos())
-	//	m_CenPos.x--;
-	if ((m_CenPos.y + 1) < Board::BoardWidth)
-		m_CenPos.x++;
+	if (CheckValidPos(&MovingTet::MoveRight))
+	{
+		for (auto &B : m_Body)
+			B->SetXY(B->GetPoint().x + 1, B->GetPoint().y);
+	}
 }
 
-void UseTet::MoveDown()
+void MovingTet::MoveDown()
 {
-	if ((m_CenPos.y + 1) <= Board::BoardHeight && CheckValidPos())
-		m_CenPos.y++;
+	if (CheckValidPos(&MovingTet::MoveDown))
+	{
+		for (auto &B : m_Body)
+			B->SetXY(B->GetPoint().x, B->GetPoint().y + 1);
+	}
 }
 
-void UseTet::Rotate()
+void MovingTet::Rotate()
 {
 	// rotate each blocks in counter-clockwise
-	std::vector<POINT> tmp;
-	for (int i = 0; i < 4; ++i)
-		tmp.push_back(m_Body[i]->GetPoint());
-	int DeadFlag = 0;
-	POINT center = tmp[1];
-
-	for (auto &p : tmp)
+	if (CheckValidPos(&MovingTet::Rotate))
 	{
-		POINT t = p;
-		p.x = center.x - (center.y - t.y);
-		p.y = center.y + (center.x - t.x);
-		if (!CheckValidPos(p))
-			DeadFlag++;
-	}
-
-	if (!DeadFlag)
-	{
-		for (int i = 0; i < 4; ++i)
-			m_Body[i]->SetPoint(tmp[i]);
+		for (auto &B : m_Body)
+		{
+			POINT p, t;
+			p = t = B->GetPoint();
+			p.x = m_Body[1]->GetPoint().x - (m_Body[1]->GetPoint().y - t.y);
+			p.y = m_Body[1]->GetPoint().y + (m_Body[1]->GetPoint().x - t.x);
+			B->SetPoint(p);
+		}
 	}
 }
 
-void UseTet::TurnOnActive(TargetTet* target)
-{
-	IsActive = true;
-	m_Target = target;
-}
-
-void UseTet::Restart()
+void MovingTet::Restart()
 {
 	m_CenPos = { 4,1 };
-	m_Type = static_cast<Tetromino::TET_TYPE>(rand() % 7);
+	m_Type = m_NextTet->GetType();
 	SetBodyByOrigin();
 }
 
-void UseTet::ApplyKey(const Key* key)
+bool MovingTet::IsDeadEnd()
+{
+	for (int i = 0; i < 4; ++i)
+	{
+		POINT p = m_Body[i]->GetPoint();
+		POINT t = m_Target->m_Body[i]->GetPoint();
+		if (p.x != t.x || p.y != t.y)
+			return false;
+	}
+	return true;
+}
+
+void MovingTet::ApplyKey(const Key* key)
 {
 	auto k = *key;
 	if (k[Key::SPACE] == true)
@@ -346,43 +448,44 @@ void UseTet::ApplyKey(const Key* key)
 		Rotate();
 }
 
+//////////////Next NotMovint Tetromino/////////
+
+void NotMovingTet::Renewal()
+{
+	m_Type = static_cast<Tetromino::TET_TYPE>(rand() % 7);
+	m_CenPos = { 1,1 };
+	SetBodyByOrigin();
+}
 
 
 //////////////TargetTet/////////
+
+
 void TargetTet::Remodel()
 {
 	m_Type = m_Model->GetType();
-	SetColor();
 	SetBodyByModel();
-	
-	while(CheckValidPos())
-	{
-		for (auto B : m_Body)
-		{
-			POINT p = B->GetPoint();
-			p.y++;
-			B->SetPoint(p);
-		}
-	}
 }
 
-void TargetTet::SetColor()
+void TargetTet::SetValidBodyByBoard()
 {
-	for (auto &B : m_Body)
-		B->SetColor(Block::COLOR_TYPE::ORANGE);
-}
+	std::vector<POINT> tmp(4);
+	for (int i = 0; i < 4; ++i)
+		tmp[i] = m_Body[i]->GetPoint();
 
-void TargetTet::SetBodyPosByBoard()
-{
-
-	while (!CheckValidPos())
+	while (true)
 	{
-		for (auto &t : m_Body)
+		for (auto &B : tmp)
+			B.y++;
+
+		if (CheckValidPos(tmp))
 		{
-			POINT p = t->GetPoint();
-			p.y--;
-			t->SetPoint(p);
+			for (int i = 0; i < 4; ++i)
+			{
+				m_Body[i]->SetPoint(tmp[i]);
+			}
 		}
+		else
+			break;
 	}
-		
 }

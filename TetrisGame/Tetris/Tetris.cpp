@@ -19,7 +19,7 @@ HINSTANCE hInst;                                // 현재 인스턴스입니다.
 WCHAR szTitle[MAX_LOADSTRING];                  // 제목 표시줄 텍스트입니다.
 WCHAR szWindowClass[MAX_LOADSTRING];            // 기본 창 클래스 이름입니다.
 HWND g_hwnd; HDC g_hdc;
-static Game* GM;	Renderer* RM;
+static GameProcesser* GM;	Renderer* RM;
 
 VOID CALLBACK TimeChecker(HWND hwnd, UINT uMsg, UINT idEvent, DWORD dwTime);
 
@@ -140,7 +140,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
 	case WM_CREATE:
 	{
-		GM = Game::GetInstance();
+		GM = GameProcesser::GetInstance();
 		GM->InitAll();
 		RM = Renderer::GetInstance();
 		RM->Init(GM);
@@ -167,6 +167,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_TIMER:
 	{
 		GM->UpdateAll();
+		if (GM->m_IsGameOver)
+		{
+			if (MessageBox(hWnd, _T("죽었습니다. 다시 하시겠습니까?"), _T("다시"), MB_OK) == IDOK)
+			{
+				GM->InitAll();
+			}
+			else
+			{
+				MessageBox(hWnd, _T("게임을 종료합니다."), _T("종료"), MB_OK);
+				Sleep(500);
+				DestroyWindow(hWnd);
+			}
+		}
 		InvalidateRgn(hWnd, NULL, FALSE);
 	}	break;
 	case WM_KEYDOWN:
@@ -209,7 +222,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		KillTimer(hWnd, 2);
 		PostQuitMessage(0);
 		Renderer::ReleaseInstance();
-		Game::ReleaseInstance();
+		GameProcesser::ReleaseInstance();
 		break;
 	}
     default:

@@ -4,16 +4,16 @@
 
 Renderer* Renderer::Instance = nullptr;
 
-void Renderer::Init(Game * GM)
+void Renderer::Init(GameProcesser * GM)
 {
-	m_GM = Game::GetInstance();
+	m_GM = GameProcesser::GetInstance();
 	hdc = nullptr;
 	block = new Block();
 }
 
 void Renderer::Render(HDC & _hdc)
 {
-	m_GM = Game::GetInstance();
+	m_GM = GameProcesser::GetInstance();
 	hdc = &_hdc;
 	m_GM->DrawAll();
 }

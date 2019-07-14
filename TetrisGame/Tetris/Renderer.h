@@ -1,5 +1,5 @@
 #pragma once
-class Game;
+class GameProcesser;
 class Block;
 class Renderer
 {
@@ -15,18 +15,18 @@ public:
 		return Instance;
 	}
 	static void ReleaseInstance() {
-		delete Instance->block;
+		//delete Instance->block;
 		delete Instance;
 	}
 private:
-	Game* m_GM;
+	GameProcesser* m_GM;
 	HDC* hdc;	// internal temporary variable
 	Block* block;// internal temporary variable
 	void FitInBoard(const Block& block);
 	void FitInMiniBoard(const Block& block);
 	void FitInBackBoard(const Block& block);
 public:
-	void Init(Game* GM);
+	void Init(GameProcesser* GM);
 	void Render(HDC& hdc);
 public:
 

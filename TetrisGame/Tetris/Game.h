@@ -4,34 +4,37 @@
 #include "Renderer.h"
 #include "Key.h"
 
-class Game
+class GameProcesser
 {
 private:
-	Game();
-	Game(Game& g);
-	~Game();
-	static Game* Instance;
+	GameProcesser();
+	GameProcesser(GameProcesser& g);
+	~GameProcesser();
+	static GameProcesser* Instance;
 public:
-	static Game* GetInstance() {
+	static GameProcesser* GetInstance() {
 		if (!Instance)
-			Instance = new Game;
+			Instance = new GameProcesser;
 		return Instance;}
 	static void ReleaseInstance() {
 		delete Instance;}
 private:
 	Key* m_Key;
-	UseTet* m_CurTet;
-	UseTet* m_NextTet;
+	MovingTet* m_CurTet;
+	NotMovingTet* m_NextTet;
 	TargetTet* m_Target;
 	Board* m_GameBoard;
 public:		// Interface
+	bool m_IsGameOver = false;
 	void InitAll();
 	void UpdateAll();
 	void InputKey(const WPARAM& wParam);
 	void DrawAll();
+	void SetTheirPtrs(Object* TheirOwnPtr);
+	void CurTetOnDeadEnd();
 	const Board* GetBoard() const { return m_GameBoard; }
-	const UseTet* GetCurTet() const { return m_CurTet; }
-	const UseTet* GetNextTet() const { return m_NextTet; }
+	const MovingTet* GetCurTet() const { return m_CurTet; }
+	const NotMovingTet* GetNextTet() const { return m_NextTet; }
 	const TargetTet* GetTarget() const { return m_Target; }
 };
 

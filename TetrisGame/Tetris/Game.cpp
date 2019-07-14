@@ -2,18 +2,18 @@
 #include "Game.h"
 #include "Tetromino.h"
 
-Game* Game::Instance = nullptr;
+GameProcesser* GameProcesser::Instance = nullptr;
 
-Game::Game()
+GameProcesser::GameProcesser()
 {
 	m_Key = new Key;
-	m_CurTet = new UseTet(m_GameBoard);
-	m_NextTet = new UseTet(m_GameBoard);
+	m_CurTet = new MovingTet(m_GameBoard);
+	m_NextTet = new NotMovingTet();
 	m_Target = new TargetTet(m_GameBoard);
 	m_GameBoard = new Board(m_Target);
 }
 
-Game::~Game()
+GameProcesser::~GameProcesser()
 {
 	delete m_Key;
 	delete m_CurTet;
@@ -22,37 +22,30 @@ Game::~Game()
 	delete m_GameBoard;
 }
 
-void Game::InitAll()
+void GameProcesser::InitAll()
 {
-	m_CurTet->SetBoardKey(m_GameBoard, m_Key);
 	m_CurTet->Init();
-	m_NextTet->SetBoardKey(m_GameBoard, m_Key);
 	m_NextTet->Init();
-	m_Target->SetModel(m_CurTet);
-	m_Target->SetBoard(m_GameBoard);
 	m_Target->Init();
-	m_CurTet->TurnOnActive(m_Target);
 	m_GameBoard->Init();
-
 }
 
-void Game::UpdateAll()
+void GameProcesser::UpdateAll()
 {
+	m_Target->Update();	//타겟을 만들고
 	m_CurTet->ApplyKey(m_Key);
 	m_Key->ClearKey();
-	m_Target->Update();
-	m_CurTet->Update();
-	m_NextTet->SetCenPos(1, 1);
-	m_NextTet->Update();
+	m_CurTet->Update();	//타겟에 맞춰지면 바뀜
+	m_NextTet->Update();//바껴지면 다른 블럭 나타내기(콜백쓰기)
 	
 }
 
-void Game::InputKey(const WPARAM & wParam)
+void GameProcesser::InputKey(const WPARAM & wParam)
 {
 	m_Key->SetKey(wParam);
 }
 
-void Game::DrawAll()
+void GameProcesser::DrawAll()
 {
 	Renderer* R = Renderer::GetInstance();
 	R->SetFuncPtr("back");
@@ -63,4 +56,37 @@ void Game::DrawAll()
 	R->SetFuncPtr("mini");
 	m_NextTet->Draw();
 	
+}
+
+void GameProcesser::SetTheirPtrs(Object* TOP)
+{
+	if (TOP == m_CurTet)
+	{
+		m_CurTet->SetBoard(static_cast<Board*>(m_GameBoard));
+		m_CurTet->SetKey(static_cast<Key*>(m_Key));
+		m_CurTet->SetTarget(static_cast<TargetTet*>(m_Target));
+		m_CurTet->SetNext(static_cast<NotMovingTet*>(m_NextTet));
+	}
+	else if (TOP == m_NextTet)
+	{
+
+	}
+	else if (TOP == m_Target)
+	{
+		m_Target->SetBoard(static_cast<Board*>(m_GameBoard));
+		m_Target->SetModel(static_cast<MovingTet*>(m_CurTet));
+	}
+	else if (TOP == m_GameBoard)
+	{
+		m_GameBoard->SetTarget(static_cast<TargetTet*>(m_Target));
+	}
+	else
+		std::cout << "Who the hack are you!" << std::endl;
+}
+
+void GameProcesser::CurTetOnDeadEnd()
+{
+	m_GameBoard->SetTarget(m_Target);
+	m_GameBoard->Update();
+	m_NextTet->Update();
 }

@@ -26,7 +26,9 @@ private:
 	std::vector<std::vector<bool>> m_MainBoard;
 	std::vector<Block> m_PileBlock;
 	int m_CountLineDeleted = 0;
-	TargetTet* m_Target;	// internal temporary variable
+	TargetTet* m_Target;	// for noting pile
+public:		//setters
+	void SetTarget(TargetTet* target) { m_Target = target; }
 public:
 	virtual void Init();
 	virtual void Update();
