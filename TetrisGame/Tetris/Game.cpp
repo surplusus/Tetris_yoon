@@ -28,6 +28,9 @@ void GameProcesser::InitAll()
 	m_NextTet->Init();
 	m_Target->Init();
 	m_GameBoard->Init();
+	if (m_CurTet != nullptr || m_NextTet != nullptr ||
+		m_Target != nullptr || m_GameBoard != nullptr)
+		IsAllInitiated = true;
 }
 
 void GameProcesser::UpdateAll()
@@ -69,7 +72,7 @@ void GameProcesser::SetTheirPtrs(Object* TOP)
 	}
 	else if (TOP == m_NextTet)
 	{
-
+		m_NextTet->SetCurrent(static_cast<MovingTet*>(m_CurTet));
 	}
 	else if (TOP == m_Target)
 	{

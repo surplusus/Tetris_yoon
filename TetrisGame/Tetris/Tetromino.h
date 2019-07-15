@@ -42,7 +42,6 @@ private:
 	TargetTet* m_Target;
 	NotMovingTet* m_NextTet;
 public:
-	bool IsActive = false;
 	std::vector<Block*> m_Body;	// body = printer to Origin, movo to center
 public:		//setters
 	void SetBoard(Board* o) { m_GameBoard = o; }
@@ -61,9 +60,8 @@ private:
 	bool CheckValidPos(POINT & pos);
 	bool CheckValidPos(void(MovingTet::*Func)(void));
 	void GoStraightDown();
-	
-	bool IsDeadEnd();
 public:
+	bool IsDeadEnd();
 	Tetromino* GetOrigin() { return m_origin; }
 	void Restart();
 	void SetCenPos(int x, int y) { m_CenPos.x = x; m_CenPos.y = y; }
@@ -90,6 +88,8 @@ public:
 	virtual void Init();
 	virtual void Update();
 	virtual void Draw();
+public:	//setter
+	void SetCurrent(MovingTet* o) { m_CurTet = o; }
 private:
 	void SetBodyByOrigin();
 	void Renewal();

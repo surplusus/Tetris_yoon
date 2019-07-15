@@ -26,6 +26,7 @@ private:
 	Board* m_GameBoard;
 public:		// Interface
 	bool m_IsGameOver = false;
+	bool IsAllInitiated = false;
 	void InitAll();
 	void UpdateAll();
 	void InputKey(const WPARAM& wParam);

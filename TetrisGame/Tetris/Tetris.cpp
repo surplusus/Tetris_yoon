@@ -166,7 +166,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }   break;
 	case WM_TIMER:
 	{
-		GM->UpdateAll();
+		if (GM->IsAllInitiated)
+			GM->UpdateAll();
+
 		if (GM->m_IsGameOver)
 		{
 			if (MessageBox(hWnd, _T("죽었습니다. 다시 하시겠습니까?"), _T("다시"), MB_OK) == IDOK)

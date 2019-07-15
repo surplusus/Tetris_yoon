@@ -7,7 +7,7 @@
 //////////////Tetromino
 Tetromino::Tetromino()
 {
-	m_Origin.resize(7);
+	m_Origin.resize(8);
 	for (auto &B : m_Origin)
 		B.resize(4);
 	SetOrigin();
@@ -137,6 +137,7 @@ TargetTet::TargetTet(Board * B) : m_GameBoard(B)
 {
 	m_CenPos = { 4,13 };
 	m_Body.resize(4);
+	m_Body = this->GetGrayBlock(this->TET_I);
 }
 
 TargetTet::~TargetTet()
@@ -153,7 +154,6 @@ void MovingTet::Init()
 	m_Type = static_cast<Tetromino::TET_TYPE>(rand() % 7);
 	GameProcesser* GP = GameProcesser::GetInstance();
 	GP->SetTheirPtrs(this);
-	m_Target = nullptr;
 	for (int i = 0; i < 4; ++i)
 		m_Body[i] = new Block(*(m_origin->GetOrigin(m_Type)[i]));
 	SetBodyByOrigin();
@@ -199,7 +199,8 @@ void MovingTet::Update()
 
 void NotMovingTet::Update()
 {
-	m_CurTet->Restart();
+	if (m_CurTet->IsDeadEnd())
+		m_CurTet->Restart();
 	Renewal();
 }
 
@@ -262,9 +263,11 @@ void NotMovingTet::SetBodyByOrigin()
 
 void TargetTet::SetBodyByModel()
 {
+	//for (auto B : m_Model->GetOrigin()->GetGrayBlock(m_Type))
+	
 	for (int i = 0; i < 4; ++i)
 	{
-		m_Body[i] = m_Model->GetOrigin()->GetGrayBlock(m_Type)[i];
+		//m_Body[i] = m_Model->GetOrigin()->GetGrayBlock(m_Type)[i];
 		POINT p = m_Model->m_Body[i]->GetPoint();
 		m_Body[i]->SetPoint(p);
 	}
@@ -356,6 +359,9 @@ bool TargetTet::CheckValidPos(std::vector<POINT> &points)
 {
 	for (int i = 0; i < 4; ++i)
 	{
+		if (points[i].y < 0 || points[i].y >= m_GameBoard->BoardHeight)
+			return false;
+
 		bool isFull = m_GameBoard->GetBoardType(points[i]);
 		if (isFull)
 			return false;
